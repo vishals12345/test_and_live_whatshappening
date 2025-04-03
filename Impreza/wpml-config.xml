@@ -49,15 +49,6 @@
 	</custom-fields>
 	<shortcodes>
 		<shortcode>
-			<tag>us_add_to_favs</tag>
-			<attributes>
-				<attribute>label_before_adding</attribute>
-				<attribute>label_after_adding</attribute>
-				<attribute>message_after_adding</attribute>
-				<attribute>message_for_non_registered</attribute>
-			</attributes>
-		</shortcode>
-		<shortcode>
 			<tag>us_breadcrumbs</tag>
 			<attributes>
 				<attribute>home</attribute>
@@ -106,13 +97,6 @@
 			<tag>us_checkout_payment</tag>
 			<attributes>
 				<attribute>btn_label</attribute>
-			</attributes>
-		</shortcode>
-		<shortcode>
-			<tag>us_color_scheme_switch</tag>
-			<attributes>
-				<attribute>text_before</attribute>
-				<attribute>text_after</attribute>
 			</attributes>
 		</shortcode>
 		<shortcode>
@@ -240,27 +224,6 @@
 			</attributes>
 		</shortcode>
 		<shortcode>
-			<tag>us_list_filter</tag>
-			<attributes>
-				<attribute type="area" encoding="us_urlencoded_json">items</attribute>
-				<attribute>mobile_button_label</attribute>
-			</attributes>
-		</shortcode>
-		<shortcode>
-			<tag>us_list_order</tag>
-			<attributes>
-				<attribute type="area" encoding="us_urlencoded_json">orderby_items</attribute>
-				<attribute>first_label</attribute>
-				<attribute>text_before</attribute>
-			</attributes>
-		</shortcode>
-		<shortcode>
-			<tag>us_list_search</tag>
-			<attributes>
-				<attribute>text</attribute>
-			</attributes>
-		</shortcode>
-		<shortcode>
 			<tag>us_login</tag>
 			<attributes>
 				<attribute>register</attribute>
@@ -331,13 +294,6 @@
 			<tag>us_post_image</tag>
 			<attributes>
 				<attribute type="link" encoding="us_link">link</attribute>
-			</attributes>
-		</shortcode>
-		<shortcode>
-			<tag>us_post_list</tag>
-			<attributes>
-				<attribute>no_items_message</attribute>
-				<attribute>pagination_btn_text</attribute>
 			</attributes>
 		</shortcode>
 		<shortcode>

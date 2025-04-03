@@ -33,7 +33,7 @@
 				}
 			.w-tabs-item.with_icon i + .w-tabs-item-title,
 			.w-tabs-item.with_icon .w-tabs-item-title + i {
-				margin-inline-start: .5em;
+				margin-left: .5em;
 				}
 
 .w-tabs-sections {
@@ -82,10 +82,12 @@
 				margin-bottom: 0 !important;
 				padding: 0 !important;
 				color: inherit;
-				margin-inline-end: .6em;
 				}
-			i + .w-tabs-section-title {
-				margin-inline-start: .6em;
+			body:not(.rtl) .w-tabs-section-title {
+				margin-right: .6em;
+				}
+			body:not(.rtl) i + .w-tabs-section-title {
+				margin-left: .6em;
 				}
 			.w-tabs-section-title:empty {
 				display: none;
@@ -249,11 +251,11 @@
 .w-tabs-sections.cpos_left > div > .w-tabs-section-header .w-tabs-section-control {
 	order: -1;
 	}
-.w-tabs-sections.cpos_left > div > .w-tabs-section-header .w-tabs-section-control {
-	margin-inline-end: .6em;
+body:not(.rtl) .w-tabs-sections.cpos_left > div > .w-tabs-section-header .w-tabs-section-control {
+	margin-right: .6em;
 	}
-.w-tabs-sections.cpos_right > div > .w-tabs-section-header .w-tabs-section-control {
-	margin-inline-start: auto;
+body:not(.rtl) .w-tabs-sections.cpos_right > div > .w-tabs-section-header .w-tabs-section-control {
+	margin-left: auto;
 	}
 
 /* TITLE Alignment */
@@ -386,7 +388,7 @@
 	opacity: .66;
 	}
 .w-tabs.style_simple.layout_hor > .w-tabs-list .w-tabs-item:not(:last-child) {
-	margin-inline-end: 1.5em;
+	margin-right: 1.5em;
 	}
 .w-tabs.style_simple.layout_ver > .w-tabs-list .w-tabs-item:not(:last-child) {
 	margin-bottom: 1em;
@@ -406,7 +408,7 @@
 	opacity: .66;
 	}
 .w-tabs.style_simple2.layout_hor > .w-tabs-list .w-tabs-item:not(:last-child) {
-	margin-inline-end: 1.5em;
+	margin-right: 1.5em;
 	}
 .w-tabs.style_simple2.layout_ver > .w-tabs-list .w-tabs-item:not(:last-child) {
 	margin-bottom: 1em;
@@ -441,7 +443,7 @@
 	border-radius: .3em;
 	}
 .w-tabs.style_simple3.layout_hor > .w-tabs-list .w-tabs-item:not(:last-child) {
-	margin-inline-end: .3em;
+	margin-right: .3em;
 	}
 .w-tabs.style_simple3.layout_ver > .w-tabs-list .w-tabs-item:not(:last-child) {
 	margin-bottom: .3em;
@@ -702,7 +704,7 @@
 		}
 	.w-tabs.style_timeline > .w-tabs-list .w-tabs-item:not(:last-child),
 	.w-tabs.style_timeline2 > .w-tabs-list .w-tabs-item:not(:last-child) {
-		margin-inline-end: 2.5em;
+		margin-right: 2.5em;
 		}
 		.w-tabs.style_timeline > .w-tabs-list .w-tabs-item.with_icon .w-tabs-item-title,
 		.w-tabs.style_timeline2 > .w-tabs-list .w-tabs-item.with_icon .w-tabs-item-title {

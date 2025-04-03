@@ -84,13 +84,15 @@
 		}
 	});
 
+	// Add to jQuery
 	$.fn.wGridOrder = function ( options ) {
 		return this.each( function () {
 			$( this ).data( 'wGridOrder', new $us.WGridOrder( this ) );
 		} );
 	};
 
+	// Init
 	$( function() {
-		$( '.w-order.for_grid', $us.$canvas ).wGridOrder();
+		$( '.w-order', $us.$canvas ).wGridOrder();
 	} );
 })( jQuery );

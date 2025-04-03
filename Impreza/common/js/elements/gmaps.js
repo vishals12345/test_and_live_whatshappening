@@ -76,7 +76,7 @@
 			if ( task.counter >= self._maxAttempts ) {
 				self.remove( key );
 			}
-			if ( typeof task.callback === 'function' ) {
+			if ( $.isFunction( task.callback ) ) {
 				task.counter++;
 				task.running = true;
 				task.callback( /* stopGeocodeTask */function() {
@@ -207,7 +207,7 @@
 			// Get style options
 			var $styleJson = $( '.w-map-style-json', self.$container );
 			if ( $styleJson.is( '[onclick]' ) ) {
-				self.style = $styleJson[0].onclick() || [];
+				self.style = $styleJson[0].onclick() || {};
 				$styleJson.remove();
 			}
 
@@ -237,7 +237,7 @@
 			self._mapInstance = new GMaps( mapOptions );
 
 			// Set map style
-			if ( self.style != _null && Array.isArray( self.style ) ) {
+			if ( self.style != _null && self.style != {} ) {
 				self._mapInstance.map.setOptions( { styles: self.style } );
 			}
 
@@ -261,7 +261,7 @@
 							self.options.latitude = latitude;
 							self.options.longitude = longitude;
 							self._mapInstance.setCenter( latitude, longitude );
-							if ( typeof stopGeocodeTask === 'function' ) {
+							if ( $.isFunction( stopGeocodeTask ) ) {
 								stopGeocodeTask();
 							}
 						},
@@ -326,7 +326,7 @@
 									if ( self.options.markers[ i ].infowindow ) {
 										marker.infoWindow.open( $ush.clone( self._mapInstance.map, /* default */{ shouldFocus: false } ), marker );
 									}
-									if ( typeof stopGeocodeTask === 'function' ) {
+									if ( $.isFunction( stopGeocodeTask ) ) {
 										stopGeocodeTask();
 									}
 								}
@@ -358,7 +358,7 @@
 				callback: function( results, status ) {
 					if ( status == 'OK' ) {
 						var location = results[0].geometry.location;
-						if ( typeof callback === 'function' ) {
+						if ( $.isFunction( callback ) ) {
 							callback.call( _null, location.lat(), location.lng(), results );
 						}
 						$us._wGmapsGeocodes.remove( uniqid );

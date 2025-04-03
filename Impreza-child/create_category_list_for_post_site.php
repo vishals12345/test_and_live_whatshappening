@@ -17,7 +17,7 @@ if ( !empty( $terms ) ){
 
   if( $post_categories ){
     foreach($post_categories as $c){
-        $div .= '<a class="w-btn us-btn-style_2" href="/'.$slug.'/category/'.$c->slug.'"><span class="w-btn-label">'.$c->name.'</span></a>';
+        $div .= '<a class="w-btn us-btn-style_2" href="/'.$slug.'/'.$c->slug.'"><span class="w-btn-label">'.$c->name.'</span></a>';
     }
   }
 

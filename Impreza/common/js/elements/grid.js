@@ -1,10 +1,11 @@
 /**
  * UpSolution Element: Grid
  */
-;( function( $, _undefined ) {
+;( function( $, undefined ) {
 	"use strict";
 
 	var _document = document,
+		_undefined = undefined,
 		_window = window;
 
 	$us.WGrid = function( container, options ) {
@@ -13,7 +14,6 @@
 
 	$us.WGrid.prototype = {
 		init: function( container, options ) {
-			const self = this;
 
 			// Elements
 			this.$container = $( container );
@@ -43,14 +43,6 @@
 			}
 			this.$container.data( 'gridInit', 1 );
 
-			// Bondable events
-			self._events = {
-				updateState: self._updateState.bind( self ),
-				updateOrderBy: self._updateOrderBy.bind( self ),
-				initMagnificPopup: self._initMagnificPopup.bind( self ),
-				usbReloadIsotopeLayout: self._usbReloadIsotopeLayout.bind( self ),
-			};
-
 			var $jsonContainer = $( '.w-grid-json', this.$container );
 			if ( $jsonContainer.length && $jsonContainer.is( '[onclick]' ) ) {
 				this.ajaxData = $jsonContainer[ 0 ].onclick() || {};
@@ -62,103 +54,114 @@
 				this.ajaxUrl = '';
 			}
 
+			this.carouselSettings = this.ajaxData.carousel_settings;
+			this.breakpoints = this.ajaxData.carousel_breakpoints || {};
+
 			if ( this.$list.hasClass( 'owl-carousel' ) ) {
-
-				// Predefined options suitable for content carousel
-				// https://owlcarousel2.github.io/OwlCarousel2/docs/api-options.html
-				let carouselOptions = {
+				this.carouselOptions = {
+					autoHeight: this.carouselSettings.autoHeight,
+					autoplay: this.carouselSettings.autoplay,
+					autoplayHoverPause: true,
+					autoplayTimeout: this.carouselSettings.timeout,
+					center: this.carouselSettings.center,
+					dots: this.carouselSettings.dots,
+					items: parseInt( this.carouselSettings.items ),
+					loop: this.carouselSettings.loop,
+					mouseDrag: ! $.isMobile && ! $us.usbPreview(),
+					nav: this.carouselSettings.nav,
 					navElement: 'button',
-					navText: [ '', '' ],
-					responsiveRefreshRate: 100,
+					navText: ['', ''],
+					responsive: {},
+					rewind: ! this.carouselSettings.loop,
+					rtl: $( '.l-body' ).hasClass( 'rtl' ),
+					slideBy: this.carouselSettings.slideby,
+					slideTransition: this.carouselSettings.transition,
+					smartSpeed: this.carouselSettings.speed
+				};
+
+				if ( this.carouselSettings.smooth_play == 1 ) {
+					this.carouselOptions.slideTransition = 'linear';
+					this.carouselOptions.autoplaySpeed = this.carouselSettings.timeout;
+					this.carouselOptions.smartSpeed = this.carouselSettings.timeout;
+					this.carouselOptions.slideBy = 1;
 				}
 
-				$.extend( carouselOptions, this.ajaxData.carousel_settings || {} );
-
-				// To prevent scroll blocking on mobiles
-				if ( $us.$html.hasClass( 'touch' ) || $us.$html.hasClass( 'ios-touch' ) ) {
-					$.extend( carouselOptions, {
-						mouseDrag: false,
+				if ( this.carouselSettings.carousel_fade ) {
+					// https://owlcarousel2.github.io/OwlCarousel2/demos/animate.html
+					$.extend( this.carouselOptions, {
+						animateOut: 'fadeOut',
+						animateIn: 'fadeIn',
 					} );
 				}
 
-				// Override specific options for proper operation in Live Builder
-				if ( $us.usbPreview() ) {
-					$.extend( carouselOptions, {
-						autoplayHoverPause: true,
-						mouseDrag: false,
-						touchDrag: false,
-						loop: false,
-					} );
-				}
-
-				if ( carouselOptions.autoplayContinual ) {
-					carouselOptions.slideTransition = 'linear';
-					carouselOptions.autoplaySpeed = carouselOptions.autoplayTimeout;
-					carouselOptions.smartSpeed = carouselOptions.autoplayTimeout;
-					if ( ! carouselOptions.autoWidth ) {
-						carouselOptions.slideBy = 1;
+				// Writing responsive params in a loop to prevent json conversion bugs
+				$.each( this.breakpoints, function( breakpointWidth, breakpointArgs ) {
+					if ( breakpointArgs !== _undefined && breakpointArgs.items !== _undefined ) {
+						this.carouselOptions.responsive[ breakpointWidth ] = breakpointArgs;
+						// Making sure items value is an integer
+						this.carouselOptions.responsive[ breakpointWidth ][ 'items' ] = parseInt( breakpointArgs.items );
 					}
-				}
+				}.bind( this ) );
 
-				// Re-init for "Show More" link after carousel init to set correct height.
-				self.$list.on( 'initialized.owl.carousel', function( e ) {
-					var $list = self.$list,
-						$toggleLinks = $( '[data-content-height]', e.currentTarget );
-					// Refresh for Toggle Links
-					$toggleLinks.each( ( _, node ) => {
-						var $node = $( node ),
-							usCollapsibleContent = $node.data( 'usCollapsibleContent' );
-						// Init for nodes that are cloned
-						if ( $ush.isUndefined( usCollapsibleContent ) ) {
-							usCollapsibleContent = $node.usCollapsibleContent().data( 'usCollapsibleContent' );
-						}
-						usCollapsibleContent.setHeight();
-						$ush.timeout( () => {
-							$list.trigger( 'refresh.owl.carousel' );
-						}, 1 );
-					} );
-					// Refresh for active tabs
-					if ( $.isMobile && $list.closest( '.w-tabs-section.active' ).length ) {
-						$ush.timeout( () => {
-							$list.trigger( 'refresh.owl.carousel' );
-						}, 50 );
-					}
-					// Updates the carousel height to expanded and collapsed text
-					if ( carouselOptions.autoHeight ) {
-						$toggleLinks.on( 'showContent', () => {
-							$list.trigger( 'refresh.owl.carousel' );
+				// Re-init containers with show more links or init tabs after carousel init.
+				this.$list
+					.on( 'initialized.owl.carousel', function( e ) {
+						var $list = this.$list,
+							$toggleLinks = $( '[data-content-height]', e.currentTarget );
+						// Refresh for Toggle Links
+						$toggleLinks.each( function( _, item ) {
+							var $item = $( item ),
+								collapsibleContent = $item.data( 'usCollapsibleContent' );
+							// Initialization for items that are cloned
+							if ( collapsibleContent === _undefined ) {
+								$item.usCollapsibleContent();
+								collapsibleContent = $item.data( 'usCollapsibleContent' );
+							}
+							if ( collapsibleContent instanceof $us.collapsibleContent ) {
+								collapsibleContent.initHeightCheck();
+								$ush.timeout( function() {
+									$list.trigger( 'refresh.owl.carousel' );
+								}, 1 );
+							}
 						} );
-					}
-				} );
-
-				// Due to the nature of the carousel, we perform the completion of movements,
-				// sometimes errors occur here when clicking on third-party elements.
-				self.$list.on( 'mousedown.owl.core', ( e ) => {
-					if ( $( e.target ).is( '[class^="collapsible-content-"]' ) ) {
-						let owlCarousel = self.$list.data( 'owl.carousel' );
-						if ( owlCarousel.settings.mouseDrag ) {
-							owlCarousel.$stage.trigger( 'mouseup.owl.core' );
+						// Refresh for active tabs
+						if ( $.isMobile && $list.closest( '.w-tabs-section.active' ).length ) {
+							$ush.timeout( function() {
+								$list.trigger( 'refresh.owl.carousel' );
+							}, 50 );
 						}
-						if ( owlCarousel.settings.touchDrag ) {
-							owlCarousel.$stage.trigger( 'touchcancel.owl.core' );
+						// Update auto height when content changes
+						if ( this.carouselSettings.autoHeight ) {
+							$toggleLinks.on( 'toggleContent', function() {
+								$list.trigger( 'refresh.owl.carousel' );
+							} );
 						}
-					}
-				} );
+					}.bind( this ) )
+					// Disabling mouse Drag if there is a toggle link.
+					.on( 'mousedown.owl.core', function() {
+						var $target = $( this );
+						if ( $( '[data-content-height]', $target ).length && ! jQuery.isMobile ) {
+							var owlCarousel = $target.data( 'owl.carousel' );
+							owlCarousel.$stage.off( 'mousedown.owl.core' );
+						}
+					} );
 
-				var owlCarousel = self.$list.owlCarousel( carouselOptions ).data( 'owl.carousel' );
+				// https://owlcarousel2.github.io/OwlCarousel2/docs/started-welcome.html
+				this.$list.owlCarousel( this.carouselOptions );
 
-				if ( owlCarousel && carouselOptions.autoplayContinual ) {
+				var owlCarousel = this.$list.data( 'owl.carousel' );
+				if ( owlCarousel && this.carouselSettings.smooth_play ) {
 					this.$list.trigger( 'next.owl.carousel' );
 				}
 
 				// Set aria labels for navigation
 				if (
 					owlCarousel
-					&& carouselOptions.aria_labels.prev
-					&& carouselOptions.aria_labels.next
+					&& this.carouselSettings.aria_labels.prev
+					&& this.carouselSettings.aria_labels.next
 				) {
-					owlCarousel.$element.find( '.owl-prev' ).attr( 'aria-label', carouselOptions.aria_labels.prev );
-					owlCarousel.$element.find( '.owl-next' ).attr( 'aria-label', carouselOptions.aria_labels.next );
+					owlCarousel.$element.find( '.owl-prev' ).attr( 'aria-label', this.carouselSettings.aria_labels.prev );
+					owlCarousel.$element.find( '.owl-next' ).attr( 'aria-label', this.carouselSettings.aria_labels.next );
 				}
 			}
 
@@ -225,7 +228,6 @@
 			}
 
 			if ( this.$container.hasClass( 'with_isotope' ) ) {
-
 				this.$list.imagesLoaded( function() {
 					var smallestItemSelector,
 						isotopeOptions = {
@@ -273,9 +275,6 @@
 
 				}.bind( this ) );
 
-				// Events
-				self.$container.on( 'usbReloadIsotopeLayout', self._events.usbReloadIsotopeLayout );
-
 			} else if ( this.paginationType == 'ajax' ) {
 				this.initAjaxPagination();
 			}
@@ -298,125 +297,116 @@
 			// This is necessary for interaction from the Grid Filter or Grid Order.
 			if ( this.$container.closest( '.l-main' ).length ) {
 				$us.$body
-					.on( 'us_grid.updateState', self._events.updateState )
-					.on( 'us_grid.updateOrderBy', self._events.updateOrderBy );
+					.on( 'us_grid.updateState', this._events.updateState.bind( this ) )
+					.on( 'us_grid.updateOrderBy', this._events.updateOrderBy.bind( this ) );
 			}
 
-			// Events
-			this.$list.on( 'click', '[ref=magnificPopup]', self._events.initMagnificPopup );
+			// Add events
+			this.$list
+				.on( 'click', '[ref=magnificPopup]', this._events.initMagnificPopup.bind( this ) );
 		},
-
 		/**
-		 * Update Grid State.
-		 *
-		 * @param {Event} e
-		 * @param {string} queryString Query string containing Grid Filter parameters
-		 * @param {number} page
-		 * @param {object} gridFilter
+		 * Event handlers
 		 */
-		_updateState: function( e, queryString, page, gridFilter ) {
-			var $container = this.$container;
-			if (
-				! $container.is( '[data-filterable="true"]' )
-				|| ! $container.hasClass( 'used_by_grid_filter' )
-				|| (
-					! $container.is( ':visible' )
-					&& ! $container.hasClass( 'hidden' )
-				)
-			) {
-				return;
-			}
-
-			page = page || 1;
-			this.changeUpdateState = true;
-			this.gridFilter = gridFilter;
-
-			// Is load grid content
-			if ( this.ajaxData === _undefined ) {
-				this.ajaxData = {};
-			}
-
-			if ( ! this.hasOwnProperty( 'templateVars' ) ) {
-				this.templateVars = this.ajaxData.template_vars || {
-					query_args: {}
-				};
-			}
-			this.templateVars.us_grid_filter_query_string = queryString;
-			if ( this.templateVars.query_args !== false ) {
-				this.templateVars.query_args.paged = page;
-			}
-
-			// Related parameters for getting data, number of records for taxonomy, price range for WooCommerce,
-			// etc.
-			this.templateVars.filters_args = gridFilter.filtersArgs || {};
-			this.setState( page );
-
-			// Reset pagination
-			if ( this.paginationType === 'regular' && /page(=|\/)/.test( location.href ) ) {
-				var url = location.href.replace( /(page(=|\/))(\d+)(\/?)/, '$1' + page + '$2' );
-				if ( history.replaceState ) {
-					history.replaceState( _document.title, _document.title, url );
+		_events: {
+			/**
+			 * Update Grid State.
+			 *
+			 * @param {Event} e
+			 * @param {string} queryString Query string containing Grid Filter parameters
+			 * @param {number} page
+			 * @param {object} gridFilter
+			 */
+			updateState: function( e, queryString, page, gridFilter ) {
+				var $container = this.$container;
+				if (
+					! $container.is( '[data-filterable="true"]' )
+					|| ! $container.hasClass( 'used_by_grid_filter' )
+					|| (
+						! $container.is( ':visible' )
+						&& ! $container.hasClass( 'hidden' )
+					)
+				) {
+					return;
 				}
-			}
-		},
 
-		/**
-		 * Update Grid orderby.
-		 *
-		 * @param {Event} e
-		 * @param string orderby String for order by params.
-		 * @param {number} page
-		 * @param {object} gridOrder
-		 */
-		_updateOrderBy: function( e, orderby, page, gridOrder ) {
-			if (
-				! this.$container.is( '[data-filterable="true"]' )
-				|| ! this.$container.hasClass( 'used_by_grid_order' )
-			) {
-				return;
-			}
+				page = page || 1;
+				this.changeUpdateState = true;
+				this.gridFilter = gridFilter;
 
-			page = page || 1;
-			this.changeUpdateState = true;
-			if ( ! this.hasOwnProperty( 'templateVars' ) ) {
-				this.templateVars = this.ajaxData.template_vars || {
-					query_args: {}
-				};
-			}
-			if ( this.templateVars.query_args !== false ) {
-				this.templateVars.query_args.paged = page;
-			}
-			this.templateVars.grid_orderby = orderby;
-			this.setState( page );
-		},
+				// Is load grid content
+				if ( this.ajaxData === _undefined ) {
+					this.ajaxData = {};
+				}
 
-		/**
-		 * Initializing MagnificPopup for AJAX loaded items.
-		 *
-		 * @param {Event} e
-		 */
-		_initMagnificPopup: function( e ) {
-			e.stopPropagation();
-			e.preventDefault();
-			var $target = $( e.currentTarget );
-			if ( $target.data( 'magnificPopup' ) === _undefined ) {
-				$target.magnificPopup( {
-					type: 'image',
-					mainClass: 'mfp-fade'
-				} );
-				$target.trigger( 'click' );
-			}
-		},
+				if ( ! this.hasOwnProperty( 'templateVars' ) ) {
+					this.templateVars = this.ajaxData.template_vars || {
+						query_args: {}
+					};
+				}
+				this.templateVars.us_grid_filter_query_string = queryString;
+				if ( this.templateVars.query_args !== false ) {
+					this.templateVars.query_args.paged = page;
+				}
 
-		/**
-		 * Reload layout in the Live Builder context.
-		 *
-		 * @event handler
-		 */
-		_usbReloadIsotopeLayout: function() {
-			const self = this;
-			if ( self.$container.hasClass( 'with_isotope' ) ) {
-				self.$list.isotope( 'layout' );
+				// Related parameters for getting data, number of records for taxonomy, price range for WooCommerce,
+				// etc.
+				this.templateVars.filters_args = gridFilter.filtersArgs || {};
+				this.setState( page );
+
+				// Reset pagination
+				if ( this.paginationType === 'regular' && /page(=|\/)/.test( location.href ) ) {
+					var url = location.href.replace( /(page(=|\/))(\d+)(\/?)/, '$1' + page + '$2' );
+					if ( history.replaceState ) {
+						history.replaceState( _document.title, _document.title, url );
+					}
+				}
+			},
+			/**
+			 * Update Grid orderby.
+			 *
+			 * @param {Event} e
+			 * @param string orderby String for order by params.
+			 * @param {number} page
+			 * @param {object} gridOrder
+			 */
+			updateOrderBy: function( e, orderby, page, gridOrder ) {
+				if (
+					! this.$container.is( '[data-filterable="true"]' )
+					|| ! this.$container.hasClass( 'used_by_grid_order' )
+				) {
+					return;
+				}
+
+				page = page || 1;
+				this.changeUpdateState = true;
+				if ( ! this.hasOwnProperty( 'templateVars' ) ) {
+					this.templateVars = this.ajaxData.template_vars || {
+						query_args: {}
+					};
+				}
+				if ( this.templateVars.query_args !== false ) {
+					this.templateVars.query_args.paged = page;
+				}
+				this.templateVars.grid_orderby = orderby;
+				this.setState( page );
+			},
+			/**
+			 * Initializing MagnificPopup for AJAX loaded items.
+			 *
+			 * @param {Event} e
+			 */
+			initMagnificPopup: function( e ) {
+				e.stopPropagation();
+				e.preventDefault();
+				var $target = $( e.currentTarget );
+				if ( $target.data( 'magnificPopup' ) === _undefined ) {
+					$target.magnificPopup( {
+						type: 'image',
+						mainClass: 'mfp-fade'
+					} );
+					$target.trigger( 'click' );
+				}
 			}
 		},
 
@@ -592,7 +582,7 @@
 
 						if ( $sliders.length ) {
 							$sliders.each( function( index, slider ) {
-								$( slider ).usImageSlider().find( '.royalSlider' ).data( 'royalSlider' ).ev.on( 'rsAfterInit', function() {
+								$( slider ).wSlider().find( '.royalSlider' ).data( 'royalSlider' ).ev.on( 'rsAfterInit', function() {
 									if ( isotope ) {
 										this.$list.isotope( 'layout' );
 									}
@@ -618,7 +608,19 @@
 							this.$list.trigger( 'layoutComplete' );
 						}
 
+						// Check any tabs in loaded content
+						var $tabs = $( '.w-tabs', $items );
+						if ( $tabs.length > 0 ) {
+							$tabs.wTabs(); // if post has tabs - init them
+						}
+
 						if ( this.paginationType == 'ajax' ) {
+
+							// Check any videos in loaded content
+							var $video = $( '.w-video', $items );
+							if ( $video.length > 0 ) {
+								$video.wVideo(); // if post has videos - init them
+							}
 
 							if ( page == 1 ) {
 								var $jsonContainer = $result.find( '.w-grid-json' );
@@ -714,11 +716,6 @@
 							new USAnimate( this.$container );
 						}
 
-						// List items loaded
-						$ush.timeout( () => {
-							$us.$document.trigger( 'usGrid.itemsLoaded', [ $items ] );
-						}, 1 );
-
 					}.bind( this ) );
 
 					// Scroll to top of grid
@@ -727,7 +724,6 @@
 					this.loading = false;
 
 					// Trigger custom event on success, might be used by 3rd party devs
-					// TODO: Remove the trigger and prompt customers to register at "usGrid.itemsLoaded".
 					this.$container.trigger( 'USGridItemsLoaded' );
 
 				}.bind( this ),
@@ -792,8 +788,8 @@
 				nextIndex = currentIndex + 1;
 			}
 
-			var $prevItem = $( typeof prevIndex === 'number' ? items[ prevIndex ] : '' ),
-				$nextItem = $( typeof nextIndex === 'number' ? items[ nextIndex ] : '' );
+			var $prevItem = $( $.isNumeric( prevIndex ) ? items[ prevIndex ] : '' ),
+				$nextItem = $( $.isNumeric( nextIndex ) ? items[ nextIndex ] : '' );
 
 			if ( $nextItem.length > 0 ) {
 				this.$popupNextArrow.removeClass( 'hidden' );

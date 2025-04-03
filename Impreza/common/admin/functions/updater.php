@@ -39,38 +39,27 @@ if ( ! function_exists( 'us_api_addons' ) ) {
 				);
 				// Note: We do not need to check this often, since after theme update addons data is reset
 				$us_api_response = us_api( '/us.api/check_addons_update/:us_themename', $get_variables, US_API_RETURN_OBJECT );
-				if ( ! empty( $us_api_response['body'] ) ) {
-					set_transient( $transient, $us_api_response['body'], 6 * HOUR_IN_SECONDS );
-					$update_addons_data = $us_api_response['body'];
+				if ( ! empty( $us_api_response ) ) {
+					set_transient( $transient, $us_api_response, 6 * HOUR_IN_SECONDS );
+					$update_addons_data = $us_api_response;
 					update_option( 'us_addons_version', US_THEMEVERSION );
 				}
 			}
 			if ( ! empty( $update_addons_data->data ) ) {
-				foreach ( $plugins as &$plugin ) {
+				foreach ( $plugins as $i => $plugin ) {
 					$slug = $plugin['slug'];
-
-					// If the ACF PRO license is activated, we do not use the portal for updates
-					if (
-						$slug === 'acf'
-						AND get_option( 'acf_pro_license' )
-						AND ! function_exists( '_option_acf_pro_license' )
-					) {
-						continue;
-					}
-
 					if ( isset( $update_addons_data->data->$slug ) ) {
 						$addon_data = $update_addons_data->data->$slug;
-
 						// Do not update version and package from Help Portal if config has higher version
 						if ( isset( $plugin['version'] ) AND version_compare( $addon_data->new_version, $plugin['version'], '<' ) ) {
 							continue;
 						}
-
-						$plugin['version'] = $addon_data->new_version;
-						$plugin['package'] = $addon_data->package;
+						$plugins[ $i ] += array(
+							'version' => $addon_data->new_version,
+							'package' => $addon_data->package,
+						);
 					}
 				}
-				unset( $plugin );
 			}
 		}
 

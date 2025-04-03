@@ -2,59 +2,155 @@
  * TablePress
  */
 
-.l-body .tablepress {
-	--border-color: var(--color-content-border);
-	--even-bg-color: var(--color-content-bg-grad);
-	--head-active-bg-color: transparent;
-	--head-active-text-color: var(--color-content-primary);
-	--head-bg-color: transparent;
-	--hover-bg-color: var(--color-content-bg-alt-grad);
-	--odd-bg-color: rgba(0,0,0,0.03);
-	--padding: .6rem 1rem;
-	--text-color: var(--color-content-text);
+.dataTables_processing {
+	display: none;
 	}
-
-.tablepress thead th {
-	line-height: 1.4;
+.dataTables_scroll {
+	clear: both;
 	}
-
-/* Fields */
-.dt-container .dt-length {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 5px;
-	justify-content: center;
+.dataTables_scrollBody {
+	-webkit-overflow-scrolling: touch;
 	}
-.dt-container input.dt-input[type=search],
-.dt-container select.dt-input {
-	line-height: 2em;
-	min-height: 2em;
-	height: 2em;
-	padding: 0 .5em;
+.tablepress-table-description {
+	display: block;
+	margin-bottom: 1.5rem;
 	}
-
-/* Pagination */
-.dt-container .dt-paging .dt-paging-button.current {
-	font-weight: bold;
+.dataTables_wrapper {
+	clear: both;
+	margin-bottom: 1.5rem;
 	}
-.dt-container .dt-paging .dt-paging-button.current,
-.dt-container .dt-paging .dt-paging-button:hover {
-	border-color: var(--color-content-border);
+	.dataTables_wrapper:after {
+		content: '';
+		display: block;
+		clear: both;
+		}
+	.dataTables_wrapper .tablepress {
+		clear: both;
+		margin: 0;
+		width: 100% !important;
+		}
+	.tablepress tbody td {
+		vertical-align: top;
+		}
+	.tablepress thead th {
+		font-weight: bold;
+		padding-top: 0;
+		}
+	.tablepress tfoot th {
+		font-weight: bold;
+		border: 0;
+		}
+	.tablepress .odd td {
+		background: rgba(0,0,0,0.03);
+		}
+	.tablepress .row-hover tr:hover td {
+		background: var(--color-content-bg-alt-grad);
+		}
+	.tablepress img {
+		max-width: none;
+		}
+.dataTables_length {
+	float: left;
+	white-space: nowrap;
+	margin-bottom: 0.7rem;
 	}
+.dataTables_filter {
+	float: right;
+	white-space: nowrap;
+	margin-bottom: 0.7rem;
+	}
+	.dataTables_wrapper label input {
+		vertical-align: middle;
+		width: auto;
+		margin-left: 0.7rem;
+		}
+	.dataTables_wrapper label select {
+		vertical-align: middle;
+		width: auto;
+		margin: 0 0.3rem;
+		}
+.dataTables_info {
+	font-size: 0.9rem;
+	clear: both;
+	float: left;
+	margin-top: 0.7rem;
+	}
+.dataTables_paginate {
+	font-size: 0.9rem;
+	float: right;
+	margin-top: 0.7rem;
+	}
+	.dataTables_paginate a {
+		display: inline-block;
+		vertical-align: top;
+		cursor: pointer;
+		margin-left: 0.7rem;
+		}
+	.paginate_button.disabled {
+		color: inherit !important;
+		cursor: default;
+		opacity: 0.5;
+		}
+	.paginate_button.current {
+		font-weight: bold;
+		cursor: default;
+		}
+		.paging_simple .paginate_button.previous:before {
+			display: inline-block;
+			vertical-align: top;
+			content: '\f104';
+			font-family: fontawesome;
+			font-weight: 400;
+			margin-right: 0.4rem;
+			}
+		.paging_simple .paginate_button.next:after {
+			display: inline-block;
+			vertical-align: top;
+			content: '\f105';
+			font-family: fontawesome;
+			font-weight: 400;
+			margin-left: 0.4rem;
+			}
 
 /* Sorting */
-@media screen and (min-width: 1025px) {
-.tablepress thead .dt-orderable-asc .dt-column-order,
-.tablepress thead .dt-orderable-desc .dt-column-order,
-.tablepress thead .dt-ordering-asc .dt-column-order,
-.tablepress thead .dt-ordering-desc .dt-column-order {
-	display: inline-block;
-	vertical-align: middle;
-	position: relative;
-	left: auto;
-	right: auto;
-	margin: 0 .4rem;
-	color: inherit;
+.tablepress .sorting,
+.tablepress .sorting_asc,
+.tablepress .sorting_desc {
+	cursor: pointer;
+	}
+.no-touch .tablepress .sorting:hover {
+	color: var(--color-content-link-hover);
+	}
+.tablepress .sorting_asc,
+.tablepress .sorting_desc {
+	color: var(--color-content-link);
+	}
+	.tablepress .sorting_asc:after,
+	.tablepress .sorting_desc:after {
+		display: inline-block;
+		vertical-align: top;
+		content: '\f107';
+		font-family: fontawesome;
+		font-weight: 900;
+		font-size: 1.2rem;
+		margin-left: 0.4rem;
+		margin-right: -1.2rem;
+		width: 0.8rem;
+		}
+	.tablepress .sorting_asc:after {
+		transform: rotate(180deg);
+		}
+	.dataTables_scrollBody .tablepress thead th:after {
+		display: none;
+		}
+
+/* Responsive
+   ========================================================================== */
+@media screen and (max-width: 480px) {
+.dataTables_length,
+.dataTables_filter,
+.dataTables_info,
+.dataTables_paginate {
+	float: none !important;
 	}
 }

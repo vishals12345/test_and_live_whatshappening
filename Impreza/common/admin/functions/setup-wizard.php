@@ -482,8 +482,8 @@ if ( ! function_exists( 'us_upload_import_file' ) ) {
 		if (
 			! $us_api_response = us_api( '/us.api/download_demo/:us_themename', $get_variables )
 			OR (
-				strlen( $us_api_response['body'] ) < 300
-				AND json_decode( $us_api_response['body'] ) === NULL
+				strlen( $us_api_response ) < 300
+				AND json_decode( $us_api_response ) === NULL
 			)
 		) {
 			$message_error = new WP_Error( 'us-demo-import-file', 'Failed to download files from the UpSolution server.' );
@@ -492,7 +492,7 @@ if ( ! function_exists( 'us_upload_import_file' ) ) {
 		}
 
 		// Get the data from the server and write it into the relevant file
-		if ( $fp = fopen( $file_path, 'w' ) AND fwrite( $fp, $us_api_response['body'] ) ) {
+		if ( $fp = fopen( $file_path, 'w' ) AND fwrite( $fp, $us_api_response ) ) {
 			return $file_path;
 
 		} else {
@@ -593,14 +593,12 @@ if ( ! function_exists( 'us_action_for_import' ) ) {
 		}
 
 		$file_path = us_upload_import_file( $filename );
-
 		if ( ! is_wp_error( $file_path ) ) {
 			us_import_content( $file_path );
 			if ( is_callable( $callback ) ) {
 				call_user_func( $callback );
 			}
 			wp_send_json_success();
-
 		} else {
 			wp_send_json_error(
 				array(
@@ -615,7 +613,6 @@ if ( ! function_exists( 'us_action_for_import' ) ) {
 if ( ! function_exists( 'wp_ajax_us_import_content_all' ) ) {
 	add_action( 'wp_ajax_us_import_content_all', 'wp_ajax_us_import_content_all' );
 	function wp_ajax_us_import_content_all() {
-
 		if ( ! check_ajax_referer( 'us-setup-wizard-actions', 'security', FALSE ) ) {
 			wp_send_json_error(
 				array(
@@ -632,21 +629,18 @@ if ( ! function_exists( 'wp_ajax_us_import_content_all' ) ) {
 
 		if ( ! is_wp_error( $file_path ) ) {
 
-			// Actions BEFORE saving posts to database
+			// Mega menu import filters and actions - START
 			add_filter( 'wp_import_post_data_raw', 'us_demo_import_all_wp_import_post_data_raw' );
 			function us_demo_import_all_wp_import_post_data_raw( $post ) {
-
-				// Filter content of every post
-				if ( ! in_array( $post['post_type'], array( 'nav_menu_item', 'attachment' ) ) AND ! empty( $post['post_content'] ) ) {
-					$post['post_content'] = us_replace_post_list_term_slugs_with_ids( $post['post_content'] );
+				global $us_demo_import_mega_menu_data;
+				if ( $post['post_type'] != 'nav_menu_item' ) {
+					return $post;
 				}
 
-				// Collect meta data of menu items 
-				global $us_demo_import_mega_menu_data;
-				if ( $post['post_type'] == 'nav_menu_item' AND isset( $post['postmeta'] ) AND is_array( $post['postmeta'] ) ) {
+				if ( isset( $post['postmeta'] ) and is_array( $post['postmeta'] ) ) {
 					foreach ( $post['postmeta'] as $postmeta ) {
-						if ( is_array( $postmeta ) AND isset( $postmeta['key'] ) AND $postmeta['key'] == 'us_mega_menu_settings' AND ! empty( $postmeta['value'] ) ) {
-							if ( ! isset( $us_demo_import_mega_menu_data ) OR ! is_array( $us_demo_import_mega_menu_data ) ) {
+						if ( is_array( $postmeta ) and isset( $postmeta['key'] ) and $postmeta['key'] == 'us_mega_menu_settings' and ! empty( $postmeta['value'] ) ) {
+							if ( ! isset( $us_demo_import_mega_menu_data ) or ! is_array( $us_demo_import_mega_menu_data ) ) {
 								$us_demo_import_mega_menu_data = array();
 							}
 
@@ -659,7 +653,6 @@ if ( ! function_exists( 'wp_ajax_us_import_content_all' ) ) {
 				return $post;
 			}
 
-			// Actions AFTER saving posts to database
 			add_action( 'import_end', 'us_demo_import_all_import_end' );
 			function us_demo_import_all_import_end() {
 				global $wp_import, $us_demo_import_mega_menu_data;
@@ -672,6 +665,7 @@ if ( ! function_exists( 'wp_ajax_us_import_content_all' ) ) {
 					}
 				}
 			}
+			// Mega menu import filters and actions - END
 
 			// Register testimonials, if its has in the contents
 			if (
@@ -766,14 +760,14 @@ if ( ! function_exists( 'wp_ajax_us_import_content_all' ) ) {
 				}
 			}
 
-			// Trash the "Hello World" post
+			// Trashing Hello World Post
 			wp_trash_post( 1 );
 
 			if ( function_exists( 'wc_delete_product_transients' ) ) {
 				wc_delete_product_transients();
 			}
 
-			// Set the permalink structure
+			// Setting permalink structure
 			global $wp_rewrite;
 			$wp_rewrite->set_permalink_structure( '/%postname%/' );
 			update_option( 'us_flush_rules', TRUE, /* autoload */ 'yes' );
@@ -969,7 +963,6 @@ if ( ! function_exists( 'us_import_content_woocommerce' ) ) {
 				wc_delete_product_transients();
 			}
 			wp_send_json_success();
-
 		} else {
 			wp_send_json_error(
 				array(
@@ -1133,48 +1126,5 @@ if ( ! function_exists( 'us_import_content_theme_options' ) ) {
 				)
 			);
 		}
-	}
-}
-
-if ( ! function_exists( 'us_replace_post_list_term_slugs_with_ids' ) ) {
-	/**
-	 * Replace Post List tax query terms slugs with IDs
-	 */
-	function us_replace_post_list_term_slugs_with_ids( $content ) {
-		return preg_replace_callback(
-			'/\[(us_post_list|us_product_list)([^\]]+?)tax_query="(.+?)"([^\]]*?)\]/',
-			function ( $matches ) {
-
-				if ( empty( $matches[3] ) ) {
-					return $matches[0];
-				}
-
-				$tax_query = json_decode( rawurldecode( $matches[3] ), TRUE );
-
-				if ( is_array( $tax_query ) ) {
-					foreach ( $tax_query as &$query ) {
-						if ( isset( $query['terms'] ) AND is_string( $query['terms'] ) ) {
-							$term_slugs = explode( ',', $query['terms'] );
-							$term_ids = array();
-
-							foreach ( $term_slugs as $term_slug ) {
-								if ( $term = get_term_by( 'slug', $term_slug, $query['taxonomy'] ) ) {
-									$term_ids[] = $term->term_id;
-								} else {
-									$term_ids[] = '0';
-								}
-							}
-
-							$query['terms'] = implode( ',', $term_ids );
-						}
-					}
-				}
-
-				$new_tax_query = rawurlencode( json_encode( $tax_query ) );
-
-				return str_replace( $matches[3], $new_tax_query, $matches[0] );
-			},
-			$content
-		);
 	}
 }

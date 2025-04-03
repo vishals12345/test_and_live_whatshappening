@@ -31,8 +31,8 @@
 			max-height: inherit;
 			border-radius: inherit;
 			}
-		/* Reset images width if they have a specified height */
-		.w-image.has_height img,
+		/* reset width for non-SVG images and for all images in Header */
+		.w-image img:not([src*=".svg"]),
 		.w-image[class*="ush_image_"] img {
 			width: auto;
 			}
@@ -108,7 +108,6 @@
 		border-radius: inherit;
 		-webkit-filter: blur(25px);
 		filter: blur(25px);
-		transform: translateZ(0); /* fix for Safari */
 		}
 	.w-image.style_shadow-2 img {
 		position: relative;
@@ -162,6 +161,20 @@
 .w-image.has_text_color .w-image-meta {
 	color: inherit;
 	}
+
+/* WordPress captions */
+.wp-caption {
+	line-height: 0;
+	margin: 0 0 1.5rem;
+	max-width: 100%;
+	position: relative;
+	}
+	.wp-caption-text {
+		display: block;
+		font-size: 0.85rem;
+		line-height: 1.6;
+		margin: 0.5rem 0 0;
+		}
 
 /* Stylize as iPhone 12 */
 .w-image.style_phone12 {

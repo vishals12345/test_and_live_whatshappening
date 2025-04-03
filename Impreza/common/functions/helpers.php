@@ -222,13 +222,12 @@ if ( ! function_exists( 'us_api' ) ) {
 	 * Note: The function is duplicated in `us-core/functions/helpers.php`
 	 *
 	 * @param string $url The request URL
-	 * @param array $request_vars HTTP GET|POST variables
+	 * @param array $get_variables HTTP GET variables
 	 * @param int $return Returned data type
-	 * @param string $method [optional]
 	 *
-	 * @return mixed Returns query result if successful, otherwise null.
+	 * @return array|object|null|string Returns query result if successful, otherwise null or ''
 	 */
-	function us_api( $url, $request_vars = array(), $return = NULL, $method = 'GET' ) {
+	function us_api( $url, $get_variables = array(), $return = NULL ) {
 		global $help_portal_url;
 
 		if ( empty( $url ) ) {
@@ -244,127 +243,42 @@ if ( ! function_exists( 'us_api' ) ) {
 		// Generate request url
 		$url = sprintf( '%s%s', untrailingslashit( $help_portal_url ), $url );
 
-		// Sets the developer's OR themetest secret key
-		if ( isset( $request_vars['secret'] ) ) {
+		// Set the developer's OR themetest secret key
+		if ( isset( $get_variables['secret'] ) ) {
 			if ( defined( 'US_DEV_SECRET' ) AND US_DEV_SECRET ) {
-				$request_vars['dev_secret'] = US_DEV_SECRET;
-				unset( $request_vars['secret'] );
+				$get_variables['dev_secret'] = US_DEV_SECRET;
+				unset( $get_variables['secret'] );
 
-			} elseif ( defined( 'US_THEMETEST_CODE' ) AND US_THEMETEST_CODE ) {
-				$request_vars['themetest_code'] = US_THEMETEST_CODE;
-				unset( $request_vars['secret'] );
+			} else if ( defined( 'US_THEMETEST_CODE' ) AND US_THEMETEST_CODE ) {
+				$get_variables['themetest_code'] = US_THEMETEST_CODE;
+				unset( $get_variables['secret'] );
 			}
 		}
 
-		// Timestamp on client server
-		$request_vars['_timestamp'] = current_time( 'timestamp' );
-
-		$request_args = array(
-			'timeout' => 60,
-		);
-
-		if ( ! in_array( $method, array( 'GET', 'POST' ) ) ) {
-			$method = 'GET';
+		/**
+		 * Add HTTP GET variables
+		 */
+		if ( is_array( $get_variables ) AND ! empty( $get_variables ) ) {
+			$url .= '?' . build_query( $get_variables );
 		}
-
-		// Sets request variables for method
-		if ( is_array( $request_vars ) AND ! empty( $request_vars ) ) {
-			if ( $method == 'POST' )  {
-				$request_args += array(
-					'body' => (array) $request_vars,
-					'method' => $method,
-				);
-
-				// For GET method
-			} else {
-				$url .= '?' . build_query( $request_vars );
-			}
-		}
-
-		$result = array(
-			'error_message' => '',
-			'error_code' => '',
-			'body' => '',
-		);
 
 		// Make an HTTP request and get the result
 		if (
-			! $response = wp_remote_request( $url, $request_args )
-			OR is_wp_error( $response )
+			! $request = wp_remote_request( $url, array( 'timeout' => 60 ) )
+			OR is_wp_error( $request )
 		) {
-			$error_code = $response->get_error_code();
-			if ( $error_code === 'http_request_failed' ) {
-				$error_message = 'Could not connect to the server.';
-			} else {
-				$error_message = $response->get_error_message();
-			}
-			$result['error_message'] = $error_message ;
-			$result['error_code'] = $error_code;
-
 			// Saving of cURL errors to the log
-			error_log( $response->get_error_message() );
-			return $result;
+			error_log( $request->get_error_message() );
+			return '';
 		}
 
 		if ( $return === US_API_RETURN_OBJECT ) {
-			$result['body'] = json_decode( $response['body'] );
-
-		} elseif ( $return === US_API_RETURN_ARRAY ) {
-			$result['body'] = json_decode( $response['body'], TRUE );
-
-		} else {
-			$result['body'] = $response['body'];
+			return json_decode( $request['body'] ); // return object
 		}
-
-		// Errors US.API
-		$body = (array) $result['body'];
-		if ( $errors = (array) us_arr_path( $body, 'errors' ) ) {
-			foreach( $errors as $error_code => $err_message ) {
-				$result['error_message'] = (string) $err_message;
-				$result['error_code'] = $error_code;
-				break;
-			}
+		if ( $return === US_API_RETURN_ARRAY ) {
+			return json_decode( $request['body'], /* as_array */TRUE ); // return array
 		}
-
-		// For debugging response
-		if ( defined( 'US_DEV' ) ) {
-			$result['response_body'] = $response['body'];
-		}
-
-		return $result;
-	}
-}
-
-/**
- * Execute specific actions by requests from UpSolution API
- */
-if ( ! function_exists( 'us_execute_requests_from_api' ) ) {
-	add_action( 'init', 'us_execute_requests_from_api', 501 );
-
-	function us_execute_requests_from_api() {
-
-		$us_action = (string) us_arr_path( $_GET, 'us_action' );
-		$secret = (string) us_arr_path( $_GET, 'secret' );
-
-		if ( ! $us_action OR $secret !== get_option( 'us_license_secret' ) ) {
-			return;
-		}
-
-		// Access to modify Favorite Sections
-		if ( us_get_option( 'section_favorites' ) AND $us_action == 'can_modify_favorite_sections' ) {
-			update_option( 'us_can_modify_favorite_sections', (int) $_GET['status'] ?? 1 );
-			exit;
-		}
-
-		// Deactivation of license upon portal request
-		if ( $us_action == 'deactivate_license' ) {
-			delete_option( 'us_license_dev_activated' );
-			delete_option( 'us_license_activated' );
-			delete_option( 'us_license_secret' );
-			delete_transient( 'us_update_addons_data_' . US_THEMENAME );
-			update_option( 'us_can_modify_favorite_sections', 0 );
-			exit;
-		}
+		return $request['body']; // return data
 	}
 }
 
@@ -528,12 +442,12 @@ if ( ! function_exists( 'us_get_color' ) ) {
 			return '';
 		}
 
-		// Replace dynamic variable
+		// Returns the value of a dynamic variable
 		if (
 			function_exists( 'us_is_dynamic_variable' )
 			AND us_is_dynamic_variable( $value )
 		) {
-			$value = us_replace_dynamic_value( $value );
+			return us_replace_dynamic_value( $value );
 		}
 
 		// If the value begins "color", remove that prefix
@@ -741,8 +655,8 @@ if ( ! function_exists( 'us_get_demo_import_config' ) ) {
 		}
 
 		$us_api_response = us_api( '/us.api/demos_config/:us_themename', $get_variables, US_API_RETURN_ARRAY );
-		if ( ! empty( $us_api_response['body'] ) AND ! empty( $us_api_response['body']['data'] ) ) {
-			$config = $us_api_response['body']['data']; // TODO validation
+		if ( ! empty( $us_api_response ) AND ! empty( $us_api_response['data'] ) ) {
+			$config = $us_api_response['data']; // TODO validation
 		} else {
 			$config = array();
 		}
@@ -755,6 +669,7 @@ if ( ! function_exists( 'us_get_demo_import_config' ) ) {
 if ( ! function_exists( 'us_check_and_activate_theme' ) ) {
 	/**
 	 * Check for activation and activate theme
+	 *
 	 */
 	function us_check_and_activate_theme() {
 		// Get current site domain
@@ -775,11 +690,11 @@ if ( ! function_exists( 'us_check_and_activate_theme' ) ) {
 			// Get license data
 			$us_api_response = us_api( '/envato_auth', $get_variables, US_API_RETURN_ARRAY );
 			if (
-				is_array( $us_api_response['body'] )
-				AND isset( $us_api_response['body']['status'] )
-				AND $us_api_response['body']['status'] == 1
+				is_array( $us_api_response )
+				AND isset( $us_api_response['status'] )
+				AND $us_api_response['status'] == 1
 			) {
-				if ( isset( $us_api_response['body']['site_type'] ) AND $us_api_response['body']['site_type'] == 'dev' ) {
+				if ( isset( $us_api_response['site_type'] ) AND $us_api_response['site_type'] == 'dev' ) {
 					update_option( 'us_license_dev_activated', /* set value */1 );
 					delete_option( 'us_license_activated' );
 				} else {
@@ -787,9 +702,6 @@ if ( ! function_exists( 'us_check_and_activate_theme' ) ) {
 					delete_option( 'us_license_dev_activated' );
 				}
 
-				if ( isset( $us_api_response['body']['can_modify_favorite_sections'] ) ) {
-					update_option( 'us_can_modify_favorite_sections', (int) $us_api_response['body']['can_modify_favorite_sections'] );
-				}
 				update_option( 'us_license_secret', $get_variables['secret'] );
 				delete_transient( 'us_update_addons_data_' . US_THEMENAME );
 			}
@@ -803,17 +715,14 @@ if ( ! function_exists( 'us_check_and_activate_theme' ) ) {
 			// Get license data
 			$us_api_response = us_api( '/envato_auth', $get_variables, US_API_RETURN_ARRAY );
 			if (
-				is_array( $us_api_response['body'] )
-				AND isset( $us_api_response['body']['status'] )
-				AND $us_api_response['body']['status'] !== 1
+				is_array( $us_api_response )
+				AND isset( $us_api_response['status'] )
+				AND $us_api_response['status'] !== 1
 			) {
 				delete_option( 'us_license_dev_activated' );
 				delete_option( 'us_license_activated' );
 				delete_option( 'us_license_secret' );
 				delete_transient( 'us_update_addons_data_' . US_THEMENAME );
-
-			} elseif ( isset( $us_api_response['body']['can_modify_favorite_sections'] ) ) {
-				update_option( 'us_can_modify_favorite_sections', (int) $us_api_response['body']['can_modify_favorite_sections'] );
 			}
 		}
 
@@ -981,7 +890,15 @@ if ( ! function_exists( 'us_activate_plugin' ) ) {
 
 		$plugin_to_activate = trailingslashit( $plugin_folder ) . $plugin_file[0]; // Match plugin slug with appropriate plugin file.
 
-		$activate = activate_plugin( $plugin_to_activate );
+		// Remove redirect after install plugin Tablepress
+		$activate_silent = ( $plugin_slug == 'tablepress' ? TRUE : FALSE );
+
+		$activate = activate_plugin(
+			$plugin_to_activate,
+			'',
+			FALSE,
+			$activate_silent
+		);
 
 		// Remove redirects after install plugin
 		delete_transient( '_wc_activation_redirect' ); // Woocommerce
@@ -994,76 +911,6 @@ if ( ! function_exists( 'us_activate_plugin' ) ) {
 			return $activate;
 		} else {
 			return TRUE;
-		}
-	}
-}
-
-if ( ! function_exists( 'us_get_btn_class' ) ) {
-	/**
-	 * Return the button class based on style ID from Theme Options > Button Styles
-	 *
-	 * @param int $style_id
-	 * @return string
-	 */
-	function us_get_btn_class( $style_id = 0 ) {
-		static $btn_classes = array();
-
-		if ( empty( $btn_classes ) AND $btn_styles = us_get_option( 'buttons' ) ) {
-			foreach ( $btn_styles as $btn_style ) {
-				$btn_class = 'us-btn-style_' . $btn_style['id'];
-
-				if ( ! empty( $btn_style['class'] ) ) {
-					$btn_class .= ' ' . esc_attr( $btn_style['class'] );
-				}
-
-				$btn_classes[ $btn_style['id'] ] = $btn_class;
-			}
-		}
-
-		// If a button style is not exist use the first one
-		if ( empty( $style_id ) OR ! array_key_exists( $style_id, $btn_classes ) ) {
-			$style_id = array_key_first( $btn_classes );
-		}
-
-		if ( ! empty( $btn_classes ) ) {
-			return $btn_classes[ $style_id ];
-		} else {
-			return 'us-btn-style_0'; // placeholder class if button styles are not exist
-		}
-	}
-}
-
-if ( ! function_exists( 'us_get_field_style_class' ) ) {
-	/**
-	 * Return the class based on style ID from Theme Options > Field Styles
-	 *
-	 * @param int $style_id
-	 * @return string
-	 */
-	function us_get_field_style_class( $style_id = 0 ) {
-		static $field_classes = array();
-
-		if ( empty( $field_classes ) AND $field_styles = us_get_option( 'input_fields' ) ) {
-			foreach ( $field_styles as $style ) {
-				$_class = 'us-field-style_' . $style['id'];
-
-				if ( ! empty( $style['class'] ) ) {
-					$_class .= ' ' . esc_attr( $style['class'] );
-				}
-
-				$field_classes[ $style['id'] ] = $_class;
-			}
-		}
-
-		// If a style is not exist use the first one
-		if ( empty( $style_id ) OR ! array_key_exists( $style_id, $field_classes ) ) {
-			$style_id = array_key_first( $field_classes );
-		}
-
-		if ( ! empty( $field_classes ) ) {
-			return $field_classes[ $style_id ];
-		} else {
-			return '';
 		}
 	}
 }

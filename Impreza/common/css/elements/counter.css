@@ -2,25 +2,28 @@
  * Counter
  */
 
-.w-counter-value {
-	line-height: 1;
+.w-counter {
+	padding-bottom: .6rem; /* fallback value */
 	}
-.w-counter:not(.has_font_size) .w-counter-value {
-	font-size: 5rem; /* default value */
-	}
-.w-counter-title {
-	padding: 0;
-	margin: .6rem 0 0;
-	}
+	.w-counter-value {
+		line-height: 1;
+		}
+	.w-counter:not(.has_font_size) .w-counter-value {
+		font-size: 5rem; /* default value */
+		}
+	.w-counter-title {
+		padding: 0;
+		margin: .6rem 0 0;
+		}
 
-/* reset some values to not inherit from Design Options */
-p.w-counter-title,
-div.w-counter-title,
-span.w-counter-title {
-	font-size: 1rem;
-	font-weight: normal;
-	line-height: 1.4;
-	}
+	/* reset some values to not inherit from Design Options */
+	p.w-counter-title,
+	div.w-counter-title,
+	span.w-counter-title {
+		font-size: 1rem;
+		font-weight: normal;
+		line-height: 1.4;
+		}
 
 /* Colors
    ========================================================================== */

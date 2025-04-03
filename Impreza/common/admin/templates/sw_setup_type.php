@@ -7,7 +7,7 @@ global $us_template_directory_uri;
 	<div class="us-wizard-step-title"><?= __( 'Select Setup Type', 'us' ) ?></div>
 	<div class="us-wizard-setup-type">
 		<div class="us-wizard-setup-type-item" for="prebuilt">
-			<img src="<?= $us_template_directory_uri ?>/common/admin/img/sw-pre-built.jpg" width="500" height="305" alt="">
+			<img src="<?= $us_template_directory_uri ?>/common/admin/img/sw-pre-built.jpg" alt="">
 			<div class="us-wizard-setup-type-item-wrapper">
 				<div class="us-wizard-setup-type-item-title"><?= __( 'Pre-built website', 'us' ) ?></div>
 				<span><?= __( 'Start with a ready-made website base.', 'us' ) ?></span>

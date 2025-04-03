@@ -53,17 +53,3 @@
 .w-hwrapper > .align_justify {
 	width: 100%;
 	}
-
-/* Link */
-.w-hwrapper.has-link {
-	position: relative;
-	}
-	.w-hwrapper-link {
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		margin: 0 !important;
-		z-index: 10;
-		}

@@ -144,13 +144,7 @@
 		} );
 	};
 
-	$( () => {
+	$( function() {
 		$( '.w-video' ).wVideo();
 	} );
-
-	// Init in Post\Product List or Grid context
-	$us.$document.on( 'usPostList.itemsLoaded usGrid.itemsLoaded', ( _, $items ) => {
-		$( '.w-video', $items ).wVideo();
-	} );
-
 } )( jQuery );

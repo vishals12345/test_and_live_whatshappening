@@ -52,7 +52,7 @@ return array(
 		'premium' => TRUE,
 		'changelog_url' => 'https://codecanyon.net/item/woocommerce-multi-currency/20948446',
 		'url' => 'https://codecanyon.net/item/woocommerce-multi-currency/20948446',
-		'icon_url' => 'https://ps.w.org/woo-multi-currency/assets/icon-128x128.gif',
+		'icon_url' => 'https://ps.w.org/woo-multi-currency/assets/icon-128x128.jpg',
 	),
 	array(
 		'name' => 'WooCommerce Bulk Editor',
@@ -64,15 +64,6 @@ return array(
 		'icon_url' => 'https://ps.w.org/woo-bulk-editor/assets/icon-128x128.png',
 	),
 	array(
-		'name' => 'Ultimate Addons for WPBakery Page Builder',
-		'slug' => 'Ultimate_VC_Addons',
-		'description' => 'Includes WPBakery Page Builder premium addon elements',
-		'premium' => TRUE,
-		'hide_in_list' => TRUE, // hide on the Addons admin page, but allow to update from the US help portal
-		'changelog_url' => 'https://ultimate.brainstormforce.com/changelog/',
-		'url' => 'https://codecanyon.net/item/ultimate-addons-for-visual-composer/',
-	),
-	array(
 		'name' => 'Advanced Custom Fields PRO',
 		'slug' => 'acf',
 		'folder' => 'advanced-custom-fields-pro', // needed when the folder name is different from the main PHP file
@@ -80,6 +71,7 @@ return array(
 		'premium' => TRUE,
 		'changelog_url' => 'https://www.advancedcustomfields.com/changelog/',
 		'url' => 'https://www.advancedcustomfields.com/pro/',
+		'icon_url' => 'https://ps.w.org/advanced-custom-fields/assets/icon-128x128.png',
 	),
 	array(
 		'name' => 'Advanced Custom Fields',

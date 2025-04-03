@@ -57,3 +57,10 @@
 	.no-touch .w-profile-link.for_logout:hover {
 		opacity: 1;
 		}
+
+/* Links Hover Underline
+   ========================================================================== */
+.no-touch .links_underline .w-form-row-link:hover,
+.no-touch .links_underline .w-profile-link.for_logout:hover {
+	border-bottom: 1px solid;
+	}

@@ -30,9 +30,6 @@ foreach ( $activated_plugins_option as $plugin ) {
 		if ( empty( $plugin['premium'] ) ) {
 			continue;
 		}
-		if ( ! empty( $plugin['hide_in_list'] ) ) {
-			continue;
-		}
 
 		if ( strpos( $plugin['slug'], '/' ) !== FALSE ) {
 			$plugin['slug_first_part'] = $plugin['file_path'] = substr(

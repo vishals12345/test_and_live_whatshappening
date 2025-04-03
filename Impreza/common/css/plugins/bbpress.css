@@ -262,7 +262,6 @@ li.bbp-topic-freshness {
 		font-size: 0.8rem;
 		line-height: 1.5;
 		color: inherit;
-		text-decoration: none !important;
 		}
 #bbpress-forums p.bbp-topic-meta {
 	font-size: 0.8rem;
@@ -273,7 +272,6 @@ li.bbp-topic-freshness {
 	}
 	p.bbp-topic-meta a {
 		color: inherit;
-		text-decoration: none !important;
 		}
 	p.bbp-topic-meta span {
 		white-space: nowrap;
@@ -308,7 +306,6 @@ li.bbp-topic-freshness {
 			padding: 0.2rem 1rem;
 			border-radius: 0.3rem;
 			margin-bottom: 0.6rem;
-			text-decoration: none !important;
 			background: var(--color-content-bg-alt-grad);
 			}
 			#subscription-toggle span.is-subscribed:before,
@@ -325,8 +322,7 @@ li.bbp-topic-freshness {
 				}
 
 .bbp-replies .bbp-body {
-	border-bottom-style: solid;
-	border-bottom-width: 1px;
+	border-bottom: 1px solid;
 	}
 	.bbp-replies .bbp-body div.topic:after,
 	.bbp-replies .bbp-body div.reply:after {
@@ -354,8 +350,7 @@ div.bbp-reply-header {
 	font-size: 0.8rem;
 	line-height: 1.3;
 	padding: 1.5rem 0 1.5rem 7rem;
-	border-top-style: solid;
-	border-top-width: 1px;
+	border-top: 1px solid;
 	}
 #bbpress-forums div.bbp-forum-author,
 #bbpress-forums div.bbp-topic-author,
@@ -524,7 +519,6 @@ span.bbp-admin-links {
 	right: 0;
 	color: inherit;
 	opacity: 0.5;
-	text-decoration: none !important;
 	}
 
 
@@ -548,6 +542,7 @@ span.bbp-admin-links {
 	height: 1.5rem;
 	width: 1.5rem;
 	border-radius: 50%;
+	border: none !important;
 	opacity: 0.5;
 	background: rgba(0,0,0,0.1);
 	color: inherit;
@@ -774,6 +769,7 @@ div.bbp-reply-form {
 			background: var(--color-content-bg-grad);
 			}
 			#bbp-user-navigation li.current a {
+				border: none !important;
 				color: inherit;
 				}
 .bbp-user-section .bbp-pagination {
@@ -1067,6 +1063,15 @@ div.bbp-template-notice a {
 .rounded_none #subscription-toggle,
 .rounded_none #favorite-toggle {
 	border-radius: 0 !important;
+	}
+
+/* Links Hover Underline 
+   ========================================================================== */
+.no-touch .links_underline #bbpress-forums a:hover,
+.no-touch .links_underline .bbp-login-form .bbp-login-links a:hover,
+.no-touch .links_underline .bbp_widget_login .bbp-logged-in h4 a:hover,
+.no-touch .links_underline .bbp_widget_login a.button.logout-link:hover {
+	border-bottom: 1px solid;
 	}
 
 /* RESPONSIVE

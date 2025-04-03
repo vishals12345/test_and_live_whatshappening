@@ -4,31 +4,6 @@
  * About admin page
  */
 
-if ( ! function_exists( 'us_check_updates' ) ) {
-	add_action( 'init', 'us_check_updates', 501 );
-	/**
-	 * Сheck for updates.
-	 */
-	function us_check_updates() {
-		global $pagenow;
-
-		if (
-			$pagenow == 'admin.php'
-			AND isset( $_GET['page'], $_GET['check_updates'] )
-			AND $_GET['page'] == 'us-home'
-		) {
-			delete_transient( 'us_update_addons_data_' . US_THEMENAME );
-			delete_transient( 'us_demo_import_config_data_' . US_THEMENAME );
-			delete_option( 'us_addons_version' );
-
-			wp_update_plugins();
-			wp_update_themes();
-
-			wp_redirect( admin_url( 'admin.php?page=us-home' ) );
-		}
-	}
-}
-
 if ( ! defined( 'US_CORE_VERSION') ) {
 	add_action( 'admin_menu', 'us_add_info_home_page_parent', 9 );
 	function us_add_info_home_page_parent() {
@@ -79,7 +54,6 @@ function us_welcome_page() {
 		delete_option( 'us_license_dev_activated' );
 		delete_option( 'us_license_secret' );
 		delete_transient( 'us_update_addons_data_' . US_THEMENAME );
-		update_option( 'us_can_modify_favorite_sections', 0 );
 
 		us_api( '/us.api/license_deactivation/:us_themename', $get_variables, US_API_RETURN_ARRAY );
 
@@ -92,11 +66,11 @@ function us_welcome_page() {
 		// Get license data
 		$us_api_response = us_api( '/envato_auth', $get_variables, US_API_RETURN_ARRAY );
 		if (
-			is_array( $us_api_response['body'] )
-			AND isset( $us_api_response['body']['status'] )
-			AND $us_api_response['body']['status'] == 1
+			is_array( $us_api_response )
+			AND isset( $us_api_response['status'] )
+			AND $us_api_response['status'] == 1
 		) {
-			if ( isset( $us_api_response['body']['site_type'] ) AND $us_api_response['body']['site_type'] == 'dev' ) {
+			if ( isset( $us_api_response['site_type'] ) AND $us_api_response['site_type'] == 'dev' ) {
 				update_option( 'us_license_dev_activated', /* set value */1 );
 				delete_option( 'us_license_activated' );
 			} else {
@@ -117,18 +91,14 @@ function us_welcome_page() {
 		// Get license data
 		$us_api_response = us_api( '/envato_auth', $get_variables, US_API_RETURN_ARRAY );
 		if (
-			is_array( $us_api_response['body'] )
-			AND isset( $us_api_response['body']['status'] )
-			AND $us_api_response['body']['status'] !== 1
+			is_array( $us_api_response )
+			AND isset( $us_api_response['status'] )
+			AND $us_api_response['status'] !== 1
 		) {
 			delete_option( 'us_license_dev_activated' );
 			delete_option( 'us_license_activated' );
 			delete_option( 'us_license_secret' );
 			delete_transient( 'us_update_addons_data_' . US_THEMENAME );
-			update_option( 'us_can_modify_favorite_sections', 0 );
-
-		} elseif ( isset( $us_api_response['body']['can_modify_favorite_sections'] ) ) {
-			update_option( 'us_can_modify_favorite_sections', (int) $us_api_response['body']['can_modify_favorite_sections'] );
 		}
 	}
 
@@ -144,17 +114,24 @@ function us_welcome_page() {
 
 	<div class="wrap about-wrap us-home">
 		<div class="us-header">
-			<h1><?= sprintf( __( 'Welcome to %s', 'us' ), '<strong>' . US_THEMENAME . ' ' . US_THEMEVERSION . '</strong>' ) ?></h1>
+			<h1><?php echo sprintf( __( 'Welcome to %s', 'us' ), '<strong>' . US_THEMENAME . ' ' . US_THEMEVERSION . '</strong>' ) ?></h1>
+
 			<div class="us-header-links">
-				<a href="<?= esc_url( $help_portal_url ); ?>/<?= strtolower( $us_themename ) ?>/" target="_blank">
-					<?php _e( 'Online Documentation', 'us' ) ?>
-				</a>
-				<a href="<?= esc_url( $help_portal_url ); ?>/<?= strtolower( $us_themename ) ?>/tickets/" target="_blank">
-					<?php _e( 'Support Portal', 'us' ) ?>
-				</a>
-				<a href="<?= esc_url( $help_portal_url ); ?>/<?= strtolower( $us_themename ) ?>/changelog/" target="_blank">
-					<?php _e( 'Theme Changelog', 'us' ) ?>
-				</a>
+				<div class="us-header-link">
+					<a href="<?php echo esc_url( $help_portal_url ); ?>/<?php echo strtolower( $us_themename ) ?>/" target="_blank">
+						<?php _e( 'Online Documentation', 'us' ) ?>
+					</a>
+				</div>
+				<div class="us-header-link">
+					<a href="<?php echo esc_url( $help_portal_url ); ?>/<?php echo strtolower( $us_themename ) ?>/tickets/" target="_blank">
+						<?php _e( 'Support Portal', 'us' ) ?>
+					</a>
+				</div>
+				<div class="us-header-link">
+					<a href="<?php echo esc_url( $help_portal_url ); ?>/<?php echo strtolower( $us_themename ) ?>/changelog/" target="_blank">
+						<?php _e( 'Theme Changelog', 'us' ) ?>
+					</a>
+				</div>
 			</div>
 		</div>
 		<?php
@@ -163,7 +140,7 @@ function us_welcome_page() {
 			?>
 			<div class="us-activation">
 				<div class="us-activation-status yes">
-					<?= sprintf( __( '%s is activated', 'us' ), US_THEMENAME ); ?>
+					<?php echo sprintf( __( '%s is activated', 'us' ), US_THEMENAME ); ?>
 					<?php if ( defined( 'US_DEV_SECRET' ) ) {
 						echo ' via US_DEV_SECRET';
 					} else {
@@ -180,19 +157,20 @@ function us_welcome_page() {
 			<div class="us-activation">
 				<?php if ( get_option( 'us_license_dev_activated' ) ): ?>
 				<div class="us-activation-status dev">
-					<?= sprintf( __( '%s is activated for development', 'us' ), US_THEMENAME ); ?>
+					<?php echo sprintf( __( '%s is activated for development', 'us' ), US_THEMENAME ); ?>
 				</div>
 				<?php else: ?>
 				<div class="us-activation-status yes">
-					<?= sprintf( __( '%s is activated', 'us' ), US_THEMENAME ); ?>
+					<?php echo sprintf( __( '%s is activated', 'us' ), US_THEMENAME ); ?>
 				</div>
 				<?php endif ?>
-				<a class="usof-button" href="<?= admin_url( 'admin.php?page=us-home&check_updates=1' ) ?>">
-					<?= __( 'Check for Updates', 'us' )?>
-				</a>
-				<a class="usof-button" href="<?= admin_url( 'admin.php?page=us-home&deactivate=1' )?>" onclick="return confirm('<?= esc_attr( us_translate( 'Are you sure you want to do this?' ) ) ?>')">
-					<?= us_translate( 'Deactivate' ) ?>
-				</a>
+				<p>
+					<?php
+						echo '<a href="' . admin_url( 'admin.php?page=us-home&deactivate=1' ) . '" onclick="return confirm(\'' . esc_attr( us_translate( 'Are you sure you want to do this?' ) ) . '\')">';
+						echo  us_translate( 'Deactivate' );
+						echo '</a>';
+					?>
+				</p>
 			</div>
 			<?php
 			// Load Activation Form

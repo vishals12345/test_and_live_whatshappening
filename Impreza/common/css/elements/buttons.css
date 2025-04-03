@@ -52,9 +52,8 @@ input[type=submit] {
 		border-color: inherit;
 		border-image: inherit;
 		}
-.links_underline a.w-btn,
-.links_underline a.button {
-	text-decoration: none !important;
+.links_underline a.w-btn {
+	border-width: 0 !important;
 	}
 
 /* Button Wrapper */

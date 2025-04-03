@@ -23,7 +23,7 @@ html.usoverlay_fixed .header_hor .l-header.pos_fixed {
 .w-popup-trigger {
 	background: none;
 	padding: 0;
-	width: inherit;
+	cursor: pointer;
 	}
 .w-popup-trigger.type_image img {
 	vertical-align: top;
@@ -40,17 +40,15 @@ html.usoverlay_fixed .header_hor .l-header.pos_fixed {
 	height: inherit;
 	width: auto;
 	}
-.l-main .w-popup:not(.has_text_color) .w-popup-trigger.type_icon {
+.l-main .w-popup-trigger.type_icon {
 	transition: color 0.2s;
 	color: var(--color-content-link);
 	}
-.no-touch .l-main .w-popup:not(.has_text_color) .w-popup-trigger.type_icon:hover {
+.no-touch .l-main .w-popup-trigger.type_icon:hover {
 	color: var(--color-content-link-hover);
 	}
-.l-main .w-popup-trigger.type_icon i,
-.l-footer .w-popup-trigger.type_icon i {
+.l-main .w-popup-trigger.type_icon i {
 	vertical-align: top;
-	line-height: inherit;
 	}
 
 /* Popup */

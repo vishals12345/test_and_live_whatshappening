@@ -89,7 +89,7 @@
 		 */
 		addElms: function( elms ) {
 			var self = this;
-			if ( ! Array.isArray( elms ) ) {
+			if ( ! $.isArray( elms ) ) {
 				elms = [ elms ];
 			}
 			elms.map( function( element ) {

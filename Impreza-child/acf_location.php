@@ -1,45 +1,41 @@
 <?php
 function get_acf_location_content( $atts ) {
 
-  if (isset($atts["postID"])) {
-    $id = get_field("location", $atts["postID"]);
+  // Get the current post ID
+  $post_id = get_the_ID();
+
+  // Get the location and city from post meta
+  $city = get_field('event_city', $post_id);
+  $location = get_post_meta($post_id, 'location', true);
+
+  // Überprüfen, ob die Felder abgerufen wurden
+  if (empty($location)) {
+    return 'Location data is missing.';
   }
-  else {
-    $id = get_field("location");
+
+  if (empty($city)) {
+    return 'City data is missing.';
   }
 
-  global $wpdb;
+  // Get name and slug from $location
+  $location_name = get_the_title($location);
+  // Get meta value from $city 
 
-  $location = get_post_meta( get_the_ID(), 'location', false );
+  // Get the location slug from $location
+  $location_slug = get_post_field('post_name', $location);
 
-  /*
-  $posts = get_posts( array(
-      'post_type' 			=> 'post',
-      'posts_per_page'	=> 1,
-      'meta_key' 				=> 'location',
-    )
-  );
-  */
+  // Get the location category slug from $location
+  $location_category = get_the_terms($location, 'location_cat');
+  $location_category_slug = $location_category[0]->slug;
 
-  foreach( $location as $loc ) {
+  // Get base url
+  $base_url = get_site_url();
 
-      $field = '<a href="'.get_permalink($loc).'">'.get_the_title($loc).'</a>';
-      //$field = '<a href="'.get_permalink($post->location).'">'.get_the_title($post->location).'</a>';
-  }
-  //echo "--".$id."--".$atts["postID"].".";
+  // Generate the URL
+  $location_url = $base_url . '/' . $city . '/'.$location_category_slug.'/' . $location_slug . '/';
 
-  //print_r($id);
-  /*
-  global $seconddb;
+  // Create the HTML link
+  $link = '<a href="' . esc_url( $location_url ) . '">' . esc_html( $location_name ) . '</a>';
 
-  $location = $seconddb->get_results( "SELECT name FROM locations WHERE id='".$id."'" );
-
-  $field = "";
-
-  foreach( $location as $value ) {
-    $field = $value->name;
-  }
-  */
-  return $field;
-
+  return $link;
 }

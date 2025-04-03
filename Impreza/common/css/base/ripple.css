@@ -48,10 +48,6 @@
 	transform: scale(1);
 	opacity: 0;
 	pointer-events: none;
-	background: var(--color-content-bg-grad);
-	}
-.w-search[style*="--inputs-background"] .w-search-background {
-	background: var(--inputs-background);
 	}
 .w-search-background.overlay-on {
 	transition: opacity 0.25s, transform 0.5s cubic-bezier(.4,0,.2,1);

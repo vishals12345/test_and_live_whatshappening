@@ -70,3 +70,9 @@
 		display: block;
 		margin-left: 2rem;
 		}
+		
+/* Links Hover Underline 
+   ========================================================================== */
+.no-touch .links_underline .w-contacts a:hover {
+	border-bottom: 1px solid;
+	}

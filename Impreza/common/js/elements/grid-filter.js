@@ -1,13 +1,15 @@
 /**
  * UpSolution Element: Grid Filter
  */
-! function( $, _undefined ) {
+! function( $, undefined ) {
 	"use strict";
 
-	const _document = document;
+	// Private variables that are used only in the context of this function, it is necessary to optimize the code.
+	var _document = document,
+		_undefined = undefined;
 
 	// Math API
-	const abs = Math.abs;
+	var abs = Math.abs;
 
 	/**
 	 * @class usGridFilter
@@ -15,7 +17,7 @@
 	 * @param {{}} options The options
 	 */
 	function usGridFilter( container, options ) {
-		const self = this;
+		var self = this;
 
 		// Related params for get data, number of records for taxonomy, price range for WooCommerce, etc.
 		self.filtersArgs = {};
@@ -74,15 +76,15 @@
 		 */
 		self._events = {
 			changeFilter: self._changeFilter.bind( self ),
-			closeMobileFilters: self._closeMobileFilters.bind( self ),
-			openMobileFilters: self._openMobileFilters.bind( self ),
-			hideItemDropdown: self._hideItemDropdown.bind( self ),
+			filterListCloser: self._filterListCloser.bind( self ),
+			filterOpener: self._filterOpener.bind( self ),
+			hideItem: self._hideItem.bind( self ),
 			loadPageNumber: self._loadPageNumber.bind( self ),
-			resetItemValues: self._resetItemValues.bind( self ),
+			resetItem: self._resetItem.bind( self ),
 			resize: self._resize.bind( self ),
-			toggleItemSection: self._toggleItemSection.bind( self ),
-			showItemDropdown: self._showItemDropdown.bind( self ),
-			changeItemAtts: self._changeItemAtts.bind( self ),
+			showHideAccordionItem: self._showHideAccordionItem.bind( self ),
+			showItem: self._showItem.bind( self ),
+			toggleItemValue: self._toggleItemValue.bind( self ),
 			updateItemsAmount: self._updateItemsAmount.bind( self ),
 			woocommerceOrdering: self._woocommerceOrdering.bind( self ),
 		};
@@ -92,13 +94,13 @@
 
 		// Events
 		self.$container
-			.on( 'click', '.w-filter-opener', self._events.openMobileFilters )
-			.on( 'click', '.w-filter-list-closer, .w-filter-list-panel > .w-btn', self._events.closeMobileFilters );
+			.on( 'click', '.w-filter-opener', self._events.filterOpener )
+			.on( 'click', '.w-filter-list-closer, .w-filter-list-panel > .w-btn', self._events.filterListCloser );
 
 		// Item events
 		self.$filtersItem
 			.on( 'change', 'input, select', self._events.changeFilter ) // exclude [type="number"] these types for range
-			.on( 'click', '.w-filter-item-reset', self._events.resetItemValues );
+			.on( 'click', '.w-filter-item-reset', self._events.resetItem );
 
 		// Pagination
 		$( self.options.gridPaginationSelector, self.$grid )
@@ -106,12 +108,12 @@
 		$us.$window.on( 'resize load', $ush.debounce( self._events.resize, 10 ) );
 
 		// Built-in private event system
-		self.on( 'changeItemAtts', self._events.changeItemAtts );
+		self.on( 'changeItemValue', self._events.toggleItemValue );
 
 		// Show or Hide filter item
-		if ( self.$container.hasClass( 'drop_on_click' ) ) {
-			self.$filtersItem.on( 'click', '.w-filter-item-title', self._events.showItemDropdown );
-			$( _document ).on( 'mouseup', self._events.hideItemDropdown );
+		if ( self.$container.hasClass( 'show_on_click' ) ) {
+			self.$filtersItem.on( 'click', '.w-filter-item-title', self._events.showItem );
+			$( _document ).mouseup( self._events.hideItem );
 		}
 
 		// Hide all filters on ESC keyup
@@ -119,7 +121,7 @@
 			// ESC key code
 			if ( e.keyCode == 27 ) {
 				// Passing empty event object to close all filters
-				this._hideItemDropdown( {} );
+				this._hideItem( {} );
 			}
 		}.bind( self ) );
 
@@ -189,7 +191,7 @@
 		self._events.resize();
 
 		if ( self.$container.hasClass( 'togglable' ) ) {
-			self.$filtersItem.on( 'click', '.w-filter-item-title', self._events.toggleItemSection );
+			self.$filtersItem.on( 'click', '.w-filter-item-title', self._events.showHideAccordionItem );
 		}
 	};
 
@@ -236,21 +238,22 @@
 			} else if ( type === 'range' ) {
 				var $inputs = $( 'input[type!=hidden]', $item ),
 					rangeValues = [];
-				$inputs.each( ( i, input ) => {
-					let $input = $( input ),
+				$inputs.each( function( i, input ) {
+					var $input = $( input ),
 						value = $ush.parseInt( input.value ),
-						name = $ush.toString( input.dataset['name'] );
+						handle = $ush.toString( input.dataset['handle'] );
 					// If no value, check placeholders
-					if ( ! value && name == [ 'min_value', 'max_value' ][ i ] && rangeValues.length == i ) {
+					if ( ! value && handle == [ 'min_value', 'max_value' ][ i ] && rangeValues.length == i ) {
 						value = $input.attr( 'placeholder' );
 					}
 					rangeValues.push( $ush.parseInt( value ) );
 				} );
-
+				// Set values and trigger change event
 				rangeValues = rangeValues.join( '-' );
-				$( 'input[type="hidden"]', $item ).val( rangeValues !== '0-0' ? rangeValues : '' );
+				$( 'input[type="hidden"]', $item )
+					.val( rangeValues !== '0-0' ? rangeValues : '' );
 
-			} else if ( type === 'range_slider' ) {
+			} else if ( type === 'slider' ) {
 				var $input = $( 'input[type="hidden"]', $item );
 				if ( $input.val() == $ush.toString( $( '.ui-slider', $item ).data( 'defautlValues' ) ) ) {
 					$input.val( '' );
@@ -263,7 +266,7 @@
 			self.triggerGrid( 'us_grid.updateState', [ value, /*page*/1, self ] );
 
 			// Change item values
-			self.trigger( 'changeItemAtts', $item );
+			self.trigger( 'changeItemValue', $item );
 
 			// If there are selected params then add the class `active` to the main container
 			self.$container.toggleClass( 'active', self.$filtersItem.hasClass( 'has_value' ) );
@@ -293,7 +296,7 @@
 		 * @event handler
 		 * @param {Event} e The Event interface represents an event which takes place in the DOM.
 		 */
-		_resetItemValues: function( e ) {
+		_resetItem: function( e ) {
 			e.preventDefault();
 			e.stopPropagation();
 
@@ -324,7 +327,7 @@
 				$( 'option', $item ).prop( 'selected', false );
 			}
 			// Reset slider
-			if ( type === 'range_slider' ) {
+			if ( type === 'slider' ) {
 				var $uiSlider = $( '.ui-slider', $item );
 				$uiSlider.slider( 'values', $ush.toString( $uiSlider.data( 'defautlValues' ) ).split( '-' ) );
 			}
@@ -332,7 +335,7 @@
 			$( '.w-filter-item-value', $item ).removeClass( 'selected' );
 
 			// Change item values
-			self.trigger( 'changeItemAtts', $item );
+			self.trigger( 'changeItemValue', $item );
 
 			// If there are selected params then add the class `active` to the main container
 			self.$container.toggleClass( 'active', self.$filtersItem.hasClass( 'has_value' ) );
@@ -345,13 +348,13 @@
 		},
 
 		/**
-		 * Change item class and title for visual indication
+		 * Change item values.
 		 *
 		 * @event handler
 		 * @param {{}} _ self
 		 * @param {*} item
 		 */
-		_changeItemAtts: function( _, item ) {
+		_toggleItemValue: function( _, item ) {
 			var self = this,
 				$item = $( item ),
 				title = '',
@@ -391,7 +394,7 @@
 					title += ': ' + value;
 				}
 			}
-			if ( type === 'range_slider' ) {
+			if ( type === 'slider' ) {
 				var value = $( 'input[type="hidden"]:first', $item ).val();
 				hasValue = value && value != $ush.toString( $( '.ui-slider', $item ).data( 'defautlValues' ) );
 			}
@@ -430,7 +433,7 @@
 		 *
 		 * @event handler
 		 */
-		_openMobileFilters: function() {
+		_filterOpener: function() {
 			$us.$body.addClass( 'us_filter_open' );
 			this.$container.addClass( 'open' );
 		},
@@ -440,7 +443,7 @@
 		 *
 		 * @event handler
 		 */
-		_closeMobileFilters: function() {
+		_filterListCloser: function() {
 			$us.$body.removeClass( 'us_filter_open' );
 			this.$container.removeClass( 'open' );
 		},
@@ -451,13 +454,13 @@
 		 * @event handler
 		 * @param {Event} e The Event interface represents an event which takes place in the DOM.
 		 */
-		_showItemDropdown: function( e ) {
+		_showItem: function( e ) {
 			// Close all other items (extra check for accessibility browsing)
-			this._hideItemDropdown( e );
+			this._hideItem( e );
 			// Show current item
 			$( e.currentTarget )
 				.closest( '.w-filter-item' )
-				.addClass( 'dropped' );
+				.addClass( 'show' );
 		},
 
 		/**
@@ -466,13 +469,13 @@
 		 * @event handler
 		 * @param {Event} e The Event interface represents an event which takes place in the DOM.
 		 */
-		_hideItemDropdown: function( e ) {
+		_hideItem: function( e ) {
 			var self = this;
-			if ( self.$filtersItem.hasClass( 'dropped' ) ) {
-				self.$filtersItem.filter( '.dropped' ).each( function( _, node ) {
+			if ( self.$filtersItem.hasClass( 'show' ) ) {
+				self.$filtersItem.filter( '.show' ).each( function( _, node ) {
 					var $node = $( node );
 					if ( ! $node.is( e.target ) && $node.has( e.target ).length === 0 ) {
-						$node.removeClass( 'dropped' );
+						$node.removeClass( 'show' );
 					}
 				} );
 			}
@@ -484,7 +487,7 @@
 		 * @event handler
 		 * @param {Event} e The Event interface represents an event which takes place in the DOM.
 		 */
-		_toggleItemSection: function( e ) {
+		_showHideAccordionItem: function( e ) {
 			$( e.currentTarget )
 				.closest( '.w-filter-item' )
 				.toggleClass( 'open' );
@@ -612,7 +615,7 @@
 		checkItemValues: function() {
 			var self = this;
 			self.$filtersItem.each( function( _, node ) {
-				self.trigger( 'changeItemAtts', node );
+				self.trigger( 'changeItemValue', node );
 			} );
 		},
 
@@ -638,7 +641,7 @@
 				if ( value ) {
 					value += '&';
 				}
-				if ( Array.isArray( filters[ k ] ) ) {
+				if ( $.isArray( filters[ k ] ) ) {
 					value += k + '=' + filters[ k ].join( ',' );
 				}
 			}
@@ -675,7 +678,7 @@
 	};
 
 	$( function() {
-		$( '.w-filter.for_grid', $us.$canvas ).usGridFilter();
+		$( '.w-filter', $us.$canvas ).usGridFilter();
 	} );
 
 }( jQuery );

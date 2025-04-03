@@ -26,7 +26,6 @@
 	--usof-color-green-50: #008a20;
 	--usof-color-red-5: #facfd2;
 	--usof-color-red-30: #f86368;
-	--usof-color-red-50: #d63638;
 	--usof-color-yellow-5: #f5e6ab;
 	--usof-color-yellow-20: #f0c33c;
 
@@ -153,9 +152,6 @@
 .us-home a:focus {
 	box-shadow: none;
 	}
-.us-home a:focus-visible {
-	box-shadow: 0 0 0 2px var(--usof-color-blue-50);
-	}
 .us-header {
 	position: relative;
 	padding: 0 0 40px 130px;
@@ -168,9 +164,43 @@
 		}
 	.us-header-links {
 		display: flex;
-		font-size: 18px;
-		gap: 30px;
 		}
+		.us-header-link {
+			font-size: 18px;
+			margin-right: 30px;
+			}
+
+.us-features {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	margin-top: 40px;
+	}
+	.us-features > .one-third {
+		flex-shrink: 0;
+		width: 30%;
+		}
+		.us-home.about-wrap .us-features h4 {
+			font-size: 18px;
+			margin: 0;
+			}
+			.us-home.about-wrap .us-features h4 i {
+				font-size: 26px;
+				line-height: inherit;
+				vertical-align: top;
+				margin-right: 12px;
+				color: var(--usof-color-blue-50);
+				}
+		.us-home.about-wrap .us-features .button {
+			font-size: 16px;
+			}
+		.us-feature-disabled {
+			display: inline-block;
+			vertical-align: top;
+			padding: 8px 18px;
+			border-radius: 3px;
+			background-color: rgba(0,0,0,0.05);
+			}
 
 .us-activation {
 	text-align: center;
@@ -188,19 +218,16 @@
 		color: var(--usof-color-gray-30);
 		}
 	.us-activation-status.yes {
+		margin-bottom: 10px;
 		color: var(--usof-color-green-20);
 		}
 	.us-activation-status.dev {
+		margin-bottom: 10px;
 		color: var(--usof-color-yellow-20);
-		}
-	.us-activation .usof-button {
-		font-size: 13px;
-		color: inherit;
 		}
 	.us-home > .us-activation input[type="submit"] {
 		font-size: 20px;
 		padding: 5px 40px;
-		border-radius: 40px;
 		}
 	.us-activation p {
 		margin: 0;
@@ -285,9 +312,6 @@
 	.usof-container.for_white_label .usof-section {
 		max-width: none;
 		}
-		.usof-container.for_white_label .usof-section-header {
-			display: none;
-			}
 		.usof-container.for_white_label .usof-section-content {
 			padding: 20px 0;
 			}
@@ -302,25 +326,43 @@
 	padding: 0 130px 40px 0;
 	background-position: 100% 0;
 	}
+.rtl .us-header-link {
+	margin-left: 20px;
+	margin-right: 0;
+	}
+.rtl .us-home.about-wrap .us-features h4 i {
+	margin-left: 12px;
+	margin-right: 0;
+	}
 .rtl .us-activation-tooltip-text ul {
 	margin: 0 20px 10px 0;
 	}
 
 @media (max-width: 782px) {
 .us-header-links {
-	flex-direction: column;
-	align-items: flex-start;
+	display: block;
 	}
-.usof-container.for_white_label {
-	padding: 20px 0 30px;
+.us-header-link {
+	margin: 0 0 10px;
+	}
+.us-activation-desc {
+	display: none;
+	}
+.us-home.about-wrap .us-features {
+	margin-bottom: 0;
+	}
+.us-features > .one-third {
+	float: none;
+	width: 100%;
+	margin: 0 0 30px;
 	}
 }
 
 @media (max-width: 600px) {
 .us-header {
-	padding-left: 0 !important;
-	padding-right: 0 !important;
+	padding: 0 !important;
 	background: none;
+	border: none;
 	}
 .us-activation {
 	padding: 30px;
@@ -330,9 +372,6 @@
 		padding: 10px 20px;
 		width: 100%;
 		}
-.usof-container.for_white_label .usof-control {
-	margin: 0 20px;
-	}
 }
 
 /* Addons Page

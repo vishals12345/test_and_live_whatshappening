@@ -183,7 +183,12 @@
 			$.each( self.$dateFields, function( _, input ) {
 				var $input = $( input );
 				self.pickerOptions.dateFormat = $input.data( 'date-format' );
-
+				// Remove "focused" class, because input loses focus each time you click calendar
+				self.pickerOptions.onClose = function() {
+					$input
+						.closest( '.w-form-row' )
+						.removeClass( 'focused' );
+				};
 				// Note: Check for the presence of the script, since the script may not always be
 				// loaded when adding an element on the preview page, which is not critical
 				try {
@@ -355,5 +360,13 @@
 
 	// Init wForm
 	$( '.w-form.for_cform' ).wForm();
+
+	$( _document )
+		// Toggle "focused" class for form fields. Needed for "Move title on focus" option.
+		.on( 'focus blur', '.w-form-row-field:not(.for_date) input, .w-form-row-field textarea', function( e ) {
+			$( e.target )
+				.closest( '.w-form-row' )
+				.toggleClass( 'focused', e.type == 'focusin' );
+		} );
 
 }( jQuery );

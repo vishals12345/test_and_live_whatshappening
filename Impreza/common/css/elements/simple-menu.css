@@ -94,7 +94,7 @@
 .w-menu.style_blocks .menu > li > a {
 	display: block;
 	padding: var(--main-ver-indent, 0) var(--main-hor-indent, 0);
-	text-decoration: none !important;
+	border: none !important;
 	}
 
 /* Fallback for menu in header */
@@ -106,4 +106,10 @@
 	}
 .header_ver .l-header .w-menu .menu {
 	display: block;
+	}
+
+/* Links Hover Underline
+   ========================================================================== */
+.no-touch .links_underline .w-menu a:hover {
+	border-bottom: 1px solid;
 	}

@@ -1,24 +1,25 @@
 /**
  * UpSolution Element: List Search
  */
-! function( $, _undefined ) {
+! function( $, undefined ) {
 	"use strict";
 
 	const ENTER_KEY_CODE = 13;
-	const DELETE_FILTER = null;
-	const urlManager = $ush.urlManager();
-	const urlParam = '_s';
 
 	/**
-	 * @param {Node} container.
+	 * @class usListSearch - Functionality for the List Search element.
+	 * @param {String} container The container.
+	 * @param {{}} options The options [optional].
 	 */
 	function usListSearch( container ) {
-		const self = this;
+		let self = this;
 
-		// Bondable events
+		/**
+		 * @var {{}} Bondable events.
+		 */
 		self._events = {
-			searchTextChanged: self._searchTextChanged.bind( self ),
-			formSubmit: self._formSubmit.bind( self ),
+			changedSearchText: self._changedSearchText.bind( self ),
+			sendForm: self._sendForm.bind( self ),
 		};
 
 		// Elements
@@ -27,28 +28,21 @@
 		self.$pageContent = $( 'main#page-content' );
 		self.$message = $( '.w-search-message', container );
 
-		// Private "Variables"
+		// Variables
 		self.name = self.$input.attr( 'name' );
-
-		// Sets value from URL
-		if ( self.changeURLParams() ) {
-			let urlValue = urlManager.get( urlParam );
-			if ( ! $ush.isUndefined( urlValue ) ) {
-				self.$input.val( urlValue );
-			}
-		}
+		self.lastValue = '';
 
 		// Events
 		self.$container
-			.on( 'input', 'input', $ush.throttle( self._events.searchTextChanged, /* wait */300, /* no_trailing */false ) )
-			.on( 'click', 'buttom', self._events.searchTextChanged )
-			.on( 'submit', 'form', self._events.formSubmit );
+			.on( 'input', 'input', $ush.throttle( self._events.changedSearchText, /* wait */300, /* no_trailing */false ) )
+			.on( 'click', 'buttom', self._events.changedSearchText )
+			.on( 'submit', 'form', self._events.sendForm );
 
 		// Defines enter presses in field
-		$us.$document.on( 'keypress', ( e ) => {
+		$us.$document.on( 'keypress', function( e ) {
 			if ( self.$input.is( ':focus' ) && e.keyCode === ENTER_KEY_CODE ) {
 				e.preventDefault();
-				self._events.searchTextChanged( e );
+				self._events.changedSearchText( e );
 			}
 		});
 	}
@@ -57,41 +51,29 @@
 	$.extend( usListSearch.prototype, {
 
 		/**
-		 * Determines if enabled URL.
-		 *
-		 * @return {Boolean} True if enabled url, False otherwise.
-		 */
-		changeURLParams: function() {
-			return this.$container.hasClass( 'change_url_params' );
-		},
-
-		/**
 		 * @event handler
 		 * @param {Event} e The Event interface represents an event which takes place in the DOM.
 		 */
-		_formSubmit: function( e ) {
+		_sendForm: function( e ) {
 			e.preventDefault();
-			this._events.searchTextChanged( e );
+			this._events.changedSearchText( e );
 		},
 
 		/**
 		 * @event handler
 		 * @param {Event} e The Event interface represents an event which takes place in the DOM.
 		 */
-		_searchTextChanged: function( e ) {
-			const self = this;
+		_changedSearchText: function( e ) {
+			let self = this,
+				$firstList = $( `
+					.w-grid.us_post_list:not(.for_current_wp_query):not(.pagination_numbered):first:visible,
+					.w-grid.us_product_list:not(.for_current_wp_query):not(.pagination_numbered):first:visible
+				`, self.$pageContent );
 
-			const $firstList = $( `
-				.w-grid.us_post_list:visible,
-				.w-grid.us_product_list:visible,
-				.w-grid-none:visible
-			`, self.$pageContent ).first();
-
-			if ( $firstList.hasClass( 'w-grid' ) ) {
+			if ( $firstList.length ) {
 				self.$message.addClass( 'hidden' ).text('');
-				$firstList.addClass( 'used_by_list_search' );
-
-			} else if ( ! $firstList.hasClass( 'w-grid-none' ) ) {
+				$firstList.addClass( 'used_by_list_search' )
+			} else {
 				self.$message
 					.html( 'No suitable list found. Add <b>Post List</b> or <b>Product List</b> elements.' ) // do not need to translate
 					.removeClass( 'hidden' );
@@ -100,30 +82,22 @@
 				return;
 			}
 			let value = self.$input.val();
-			if ( value === '' ) {
-				value = DELETE_FILTER;
-			}
-			if ( value === self.lastValue ) {
+			if ( value === self.lastValue || ! self.name ) {
 				return;
 			}
 			self.lastValue = value;
-
-			if ( self.changeURLParams() ) {
-				urlManager.set( urlParam, value ).push();
-			}
-
-			$firstList.trigger( 'usListSearch', [ urlParam, value ] );
+			$firstList.trigger( 'usListSearch', [ value, self.name ] );
 		}
 
 	} );
 
-	$.fn.usListSearch = function() {
+	$.fn.usListSearch = function( options ) {
 		return this.each( function() {
-			$( this ).data( 'usListSearch', new usListSearch( this ) );
+			$( this ).data( 'usListSearch', new usListSearch( this, options ) );
 		} );
 	};
 
-	$( () => {
+	$( function() {
 		$( '.w-search.for_list' ).usListSearch();
 	} );
 

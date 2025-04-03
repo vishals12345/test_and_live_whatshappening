@@ -42,7 +42,7 @@
 				this.$container.appendTo( "body" );
 
 				// Close tooltip if click anywhere on page
-				$( 'body' ).not( this.activeArea ).on( 'mouseup', function() {
+				$( 'body' ).not( this.activeArea ).bind( 'mouseup', function() {
 					var selection = this.getSelection();
 					if ( selection === '' ) {
 						this.$container.hide();

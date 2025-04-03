@@ -4,13 +4,12 @@
  */
 [ 'touchstart', 'touchmove', 'wheel', 'mousewheel' ].map( function( type ) {
 	jQuery.event.special[ type ] = {
-		setup: ( _, ns, handle ) => {
-			const self = this
-			if ( typeof self.addEventListener === 'function' ) {
+		setup: function( _, ns, handle ) {
+			var self = this;
+			if ( !! self['addEventListener'] ) {
 				self.addEventListener( type, handle, {
 					passive: type.indexOf( 'touch' ) === 0
-						// Don't use passive listening for Owl Carousel or jQuery UI Sortable.
-						? ! ns.includes( 'owl' ) && typeof jQuery.fn.sortable !== 'function'
+						? ! ns.includes( 'noPreventDefault' )
 						: true
 				} );
 			}
@@ -119,6 +118,22 @@ jQuery.fn.usMod = function( mod, value ) {
 };
 
 /**
+ * Convert data from PHP to boolean the right way
+ * @param {*} value
+ * @returns {Boolean}
+ */
+$us.toBool = function( value ) {
+	if ( typeof value == 'boolean' ) {
+		return value;
+	}
+	if ( typeof value == 'string' ) {
+		value = value.trim();
+		return ( value.toLocaleLowerCase() == 'true' || value == '1' );
+	}
+	return !! parseInt( value );
+};
+
+/**
  * Determines whether animation is available or not
  * @param {String} animationName The ease animation name
  * @param {String} defaultAnimationName The default animation name
@@ -186,7 +201,7 @@ $us.mixins.Events = {
 			return self;
 		}
 		var args = arguments,
-			params = ( args.length > 2 || ! Array.isArray( extraParameters ) )
+			params = ( args.length > 2 || ! jQuery.isArray( extraParameters ) )
 				? Array.prototype.slice.call( args, 1 )
 				: extraParameters;
 		// First argument is the current class instance
@@ -263,7 +278,7 @@ jQuery.isMobile = (
 		if ( ! state ) {
 			return false;
 		}
-		if ( ! Array.isArray( state ) ) {
+		if ( ! $.isArray( state ) ) {
 			state = [ '' + state ];
 		}
 		return $.inArray( $us.getCurrentState(), state ) !== - 1;
@@ -565,7 +580,7 @@ jQuery.isMobile = (
 	$.fn.resetInlineCSS = function() {
 		var self = this,
 			args = [].slice.call( arguments );
-		if ( args.length && Array.isArray( args[0] ) ) {
+		if ( args.length && $.isArray( args[0] ) ) {
 			args = args[0];
 		}
 		for ( var index = 0; index < args.length; index ++ ) {
@@ -621,7 +636,7 @@ jQuery.isMobile = (
 
 		var timer2 = setTimeout( function() {
 			self.resetInlineCSS( 'transition' );
-			if ( typeof onFinish === 'function' ) {
+			if ( $.isFunction( onFinish ) ) {
 				onFinish();
 			}
 		}, duration + delay );
@@ -720,7 +735,7 @@ jQuery.isMobile = (
 			opacity: 0
 		}, duration, function() {
 			self.css( 'display', 'none' );
-			if ( typeof onFinish === 'function' ) {
+			if ( $.isFunction( onFinish ) ) {
 				onFinish();
 			}
 		}, easing, delay );
@@ -748,15 +763,14 @@ jQuery( function( $ ) {
 	}
 
 	// Color Scheme Switch
-	let $allSchemeSwitchCheckboxes = $( '.w-color-switch input[name=us-color-scheme-switch]' );
-
-	$allSchemeSwitchCheckboxes.prop( 'checked', $ush.getCookie( 'us_color_scheme_switch_is_on' ) === 'true' );
 	$us.$document
 		.on( 'click', '.w-color-switch > label', function( e ) {
 			e.preventDefault();
 			e.stopPropagation();
 
-			let $currentCheckbox = $( this ).find( 'input[name=us-color-scheme-switch]' );
+			let $currentCheckbox = $( this ).find( 'input[name=us-color-scheme-switch]' ),
+				$allSchemeSwitchCheckboxes = $( '.w-color-switch input[name=us-color-scheme-switch]' );
+
 
 			if ( $currentCheckbox.is( ':checked' ) ) {
 				$us.$html.removeClass( 'us-color-scheme-on' );
@@ -1003,92 +1017,115 @@ if ( $us.$body.hasClass( 'single-format-video' ) ) {
 ! function( $, undefined ) {
 	"use strict";
 
-	function usCollapsibleContent( container ) {
-		const self = this;
-
-		/**
-		 * @var {{}} Bondable events.
-		 */
-		self._events = {
-			showContent: self.showContent.bind( self ),
-		};
-
-		// Elements
-		self.$container = $( container );
-		self.$firstElement = $( '> *:first', self.$container );
-		self.collapsedHeight = self.$container.data( 'content-height' ) || 200;
-
-		// Events
-		self.$container
-			.on( 'click', '.collapsible-content-more, .collapsible-content-less', self._events.showContent );
-
-		// Init if not in Owl Carousel context
-		if ( ! self.$container.closest( '.owl-carousel' ).length ) {
-			self.setHeight.call( self );
-		}
+	$us.collapsibleContent = function( container ) {
+		this.init( container );
 	};
+	$us.collapsibleContent.prototype = {
+		init: function( container ) {
+			var self = this;
 
-	// Collapsible Content API
-	usCollapsibleContent.prototype = {
+			// Elements
+			self.$container = $( container );
+			self.$firstElm = $( '> *:first', self.$container );
+			self.contentHeight = self.$container.data( 'content-height' ) || 200;
 
-		setHeight: function() {
-			const self = this;
+			// Events
+			self.$container
+				.on( 'click', '.collapsible-content-more, .collapsible-content-less', self._events.toggleContent.bind( self ) );
 
+			// Init
+			if ( ! self.$container.closest( '.owl-carousel' ).length ) {
+				self.initHeightCheck.call( self );
+			}
+		},
+		initHeightCheck: function() {
+			var self = this;
 			// Set the height to the element in any unit of measurement and get the height in pixels
-			let collapsedHeight = self.$firstElement.css( 'height', self.collapsedHeight ).height();
-			self.$firstElement.css( 'height', '' );
-			let heightFirstElement = self.$firstElement.height();
+			var height = self.$firstElm.css( 'height', self.contentHeight ).height();
+			self.$firstElm.css( 'height', '' );
+			var elmHeight = self.$firstElm.height();
 
-			if ( heightFirstElement && heightFirstElement <= collapsedHeight ) {
+			if ( elmHeight && elmHeight <= height ) {
 				$( '.toggle-links', self.$container ).hide();
-				self.$firstElement.css( 'height', '' );
+				self.$firstElm.css( 'height', '' );
 				self.$container.removeClass( 'with_collapsible_content' );
 			} else {
 				$( '.toggle-links', self.$container ).show();
-				self.$firstElement.css( 'height', self.collapsedHeight );
+				self.$firstElm.css( 'height', self.contentHeight );
 			}
 		},
-
 		/**
-		 * Toggle show or hide content.
+		 * Determines if post container is fully visible
 		 *
-		 * @param {Event} e The Event interface represents an event which takes place in the DOM
+		 * @return {Boolean} True if visible, False otherwise
 		 */
-		showContent: function( e ) {
-			const self = this;
+		_isVisible: function() {
+			var self = this;
+			if ( ! self.$container.length ) {
+				return false;
+			}
+			var w = _window,
+				d = _document,
+				rect = self.$container[0].getBoundingClientRect(),
+				containerPosition = {
+					top: w.pageYOffset + rect.top,
+					left: w.pageXOffset + rect.left,
+					right: w.pageXOffset + rect.right,
+					bottom: w.pageYOffset + rect.bottom
+				},
+				windowPosition = {
+					top: w.pageYOffset,
+					left: w.pageXOffset,
+					right: w.pageXOffset + d.documentElement.clientWidth,
+					bottom: w.pageYOffset + d.documentElement.clientHeight
+				};
+			return (
+				containerPosition.bottom > windowPosition.top
+				&& containerPosition.top < windowPosition.bottom
+				&& containerPosition.right > windowPosition.left
+				&& containerPosition.left < windowPosition.right
+			);
+		},
+		/**
+		 * Event handlers
+		 */
+		_events: {
+			/**
+			 * Toggle show or hide post content
+			 *
+			 * @param {Event} e The Event interface represents an event which takes place in the DOM
+			 */
+			toggleContent: function( e ) {
+				e.preventDefault();
+				e.stopPropagation();
 
-			e.preventDefault();
-			e.stopPropagation();
-
-			self.$container
-				.toggleClass( 'show_content', $( e.target ).hasClass( 'collapsible-content-more' ) )
-				.trigger( 'showContent' );
-			$ush.timeout( () => {
-				$us.$canvas.trigger( 'contentChange' );
-				if ( $.isMobile && ! $ush.isNodeInViewport( self.$container[0] ) ) {
-					$us.$htmlBody
-						.stop( true, false )
-						.scrollTop( self.$container.offset().top - $us.header.getCurrentHeight( /* adminBar */true ) );
-				}
-			}, 1 );
+				var self = this;
+				self.$container
+					.toggleClass( 'show_content', $( e.target ).hasClass( 'collapsible-content-more' ) )
+					.trigger( 'toggleContent' );
+				$ush.timeout( function() {
+					$us.$canvas
+						.trigger( 'contentChange' );
+					if ( $.isMobile && ! self._isVisible() ) {
+						$us.$htmlBody
+							.stop( true, false )
+							.scrollTop( self.$container.offset().top - $us.header.getCurrentHeight( /* adminBar */true ) );
+					}
+				}, 1 );
+			}
 		}
 	};
-
 	$.fn.usCollapsibleContent = function() {
 		return this.each( function() {
-			$( this ).data( 'usCollapsibleContent', new usCollapsibleContent( this ) );
+			$( this ).data( 'usCollapsibleContent', new $us.collapsibleContent( this ) );
 		} );
 	};
 
-	$( '[data-content-height]', $us.$canvas ).usCollapsibleContent();
-
-	// Init in Post\Product List or Grid context
-	$us.$document.on( 'usPostList.itemsLoaded usGrid.itemsLoaded', ( _, $items ) => {
-		$( '[data-content-height]', $items ).usCollapsibleContent();
-	} );
+	$( '[data-content-height]', $us.$canvas )
+		.usCollapsibleContent();
 
 	/**
-	 * Additional event validation for scanned Owl Carousel items
+	 * Additional event validation for scanned carousel items
 	 */
 	if ( $( '.owl-carousel', $us.$canvas ).length ) {
 		$us.$canvas.on( 'click', '.collapsible-content-more, .collapsible-content-less', function( e ) {

@@ -16,7 +16,7 @@ if ( !empty( $terms ) ){
 
   if( $post_categories ){
     foreach($post_categories as $c){
-        $div .= '<a class="w-btn us-btn-style_3 term-'.$c->term_id.' term-'.$c->slug.'" href="/'.$slug.'/category/'.$c->slug.'" style="margin-right: 4px; margin-bottom: 4px;"><span class="w-btn-label">'.$c->name.'</span></a>';
+        $div .= '<a class="w-btn us-btn-style_3 term-'.$c->term_id.' term-'.$c->slug.'" href="/'.$slug.'/'.$c->slug.'" style="margin-right: 4px; margin-bottom: 4px;"><span class="w-btn-label">'.$c->name.'</span></a>';
         
     }
   }

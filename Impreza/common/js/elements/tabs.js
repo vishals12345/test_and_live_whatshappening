@@ -3,8 +3,10 @@
  *
  * @requires $us.canvas
  */
-! function( $, _undefined ) {
+! function( $, undefined ) {
 	"use strict";
+
+	var _undefined = undefined;
 
 	$us.WTabs = function( container, options ) {
 		this.init( container, options );
@@ -42,7 +44,7 @@
 			this.align = this.$tabsList.usMod( 'align' );
 			this.count = this.$tabs.length;
 			this.hasScrolling = this.$container.hasClass( 'has_scrolling' ) || false;
-			this.isAccordionAtWidth = $ush.parseInt( this.accordionAtWidth ) !== 0;
+			this.isAccordionAtWidth = $.isNumeric( parseInt( this.accordionAtWidth ) );
 			this.isScrolling = false;
 			this.isTogglable = ( this.$container.usMod( 'type' ) === 'togglable' );
 			this.minWidth = 0; // Container width at which we should switch to accordion layout.
@@ -642,14 +644,7 @@
 		} );
 	};
 
-	$( () => {
-		$( '.w-tabs' ).wTabs();
-	} );
-
-	// Init in Post\Product List or Grid context
-	$us.$document.on( 'usPostList.itemsLoaded usGrid.itemsLoaded', ( _, $items ) => {
-		$( '.w-tabs', $items ).wTabs();
-	} );
+	jQuery( '.w-tabs' ).wTabs();
 
 }( jQuery );
 

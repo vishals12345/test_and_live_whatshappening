@@ -114,6 +114,12 @@
 	border-color: var(--color-footer-border);
 	}
 
+/* Links Hover Underline 
+   ========================================================================== */
+.no-touch .links_underline .w-comments a:hover {
+	border-bottom: 1px solid;
+	}
+
 /* Responsive
    ========================================================================== */
 @media screen and (max-width: 600px) {

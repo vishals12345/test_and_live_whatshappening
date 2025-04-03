@@ -32,7 +32,7 @@
 	left: 0;
 	}
 .l-header.pos_fixed:not(.notransition) .l-subheader {
-	transition-property: transform, box-shadow, line-height, height;
+	transition-property: transform, background, box-shadow, line-height, height;
 	transition-duration: .3s;
 	transition-timing-function: cubic-bezier(.78,.13,.15,.86);
 	}

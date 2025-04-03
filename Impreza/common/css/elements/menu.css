@@ -55,14 +55,17 @@
 				position: relative;
 				outline: none !important;
 				}
+			.w-nav-anchor:not(.w-btn) {
+				border: none !important; /* fix when "Underline text links on hover" enabled */
+				}
 			.w-nav.type_desktop .w-nav-anchor.level_1 {
 				z-index: 1;
 				}
 			.w-nav.type_desktop .w-nav-anchor:not(.level_1) {
 				line-height: 1.5em;
-				padding: .6em 20px; /* leave 'px' to match with default menu items distance */
+				padding: 0.6em 20px; /* leave 'px' to match with default menu items distance */
 				white-space: nowrap;
-				transition-property: text-decoration-color, text-underline-offset;
+				transition: none;
 				}
 				.w-nav-title i {
 					width: 1.3em;
@@ -125,9 +128,6 @@
 	}
 
 /* Hover effect: Underline */
-.w-nav.type_desktop .hover_underline .w-nav-anchor.level_1 {
-	text-decoration: none !important;
-	}
 .w-nav.type_desktop .hover_underline .w-nav-title {
 	position: relative;
 	}
@@ -142,7 +142,7 @@
 		width: 100%;
 		background: currentColor;
 		opacity: 0;
-		transition: all .2s;
+		transition: all 0.3s;
 		}
 	.no-touch .w-nav.type_desktop .hover_underline .menu-item.level_1:hover .w-nav-title:after {
 		bottom: -2px; /* fixed value */
@@ -699,18 +699,6 @@
 .header_hor:not(.rtl) .w-nav.type_desktop .menu-item:nth-last-child(2) > a.w-btn,
 .header_hor.rtl .w-nav.type_desktop .menu-item:first-child > a.w-btn {
 	margin-right: 0;
-	}
-
-/* Disable scrolling effects for mobile menu */
-.w-nav.type_mobile.has_scroll_effects {
-	will-change: auto;
-	transform: none;
-	}
-
-/* Disable animation for mobile menu */
-.w-nav.type_mobile {
-	animation: none !important;
-	opacity: 1;
 	}
 
 /* Responsive

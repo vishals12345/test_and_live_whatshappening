@@ -14,23 +14,6 @@
 	_window.$us.canvas = _window.$us.canvas || {};
 
 	/**
-	 * Convert data from PHP to boolean the right way
-	 *
-	 * @param {*} value
-	 * @returns {Boolean}
-	 */
-	function toBoolean( value ) {
-		if ( typeof value == 'boolean' ) {
-			return value;
-		}
-		if ( typeof value == 'string' ) {
-			value = value.trim();
-			return value.toLocaleLowerCase() == 'true' || value == '1';
-		}
-		return !! parseInt( value );
-	}
-
-	/**
 	 * @class USHeader
 	 *
 	 * @param {{}} settings - The header settings
@@ -414,8 +397,8 @@
 
 			var options = ( self.settings[ state ] || {} ).options || {},
 				orientation = options.orientation || 'hor',
-				pos = toBoolean( options.sticky ) ? 'fixed' : 'static',
-				bg = toBoolean( options.transparent ) ? 'transparent' : 'solid',
+				pos = ( $us.toBool( options.sticky ) ? 'fixed' : 'static' ),
+				bg = ( $us.toBool( options.transparent ) ? 'transparent' : 'solid' ),
 				shadow = options.shadow || 'thin';
 
 			if ( orientation === 'ver' ) {
@@ -576,15 +559,14 @@
 				// Removing a class after getting all values.
 				self.$container.removeClass( 'scrollable' );
 
-				// Tolerance is needed to avoid incorrect display when browser zoom is enabled.
-				if ( ( headerHeight / canvasHeight ) > 1.05 ) {
+				if ( headerHeight > canvasHeight ) {
 					self.trigger( 'swichVerticalScrollable', true );
 
 				} else if ( self._states.vertical_scrollable ) {
 					self.trigger( 'swichVerticalScrollable', false );
 				}
 
-				if ( ( headerHeight / documentHeight ) > 1.05 ) {
+				if ( headerHeight > documentHeight ) {
 					self.$container.css( {
 						position: 'absolute',
 						top: 0

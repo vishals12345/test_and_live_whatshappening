@@ -16,7 +16,6 @@
 		line-height: 2;
 		padding: 0 0.8em;
 		min-width: 3em;
-		text-decoration: none !important;
 		transition: none;
 		border-color: var(--color-content-border);
 		}
@@ -141,7 +140,7 @@
 	color: #1e77f0;
 	}
 	
-/* X (Twitter) */
+/* Twitter */
 .w-sharing.type_solid .w-sharing-item.twitter,
 .w-sharing.type_fixed .w-sharing-item.twitter,
 .no-touch .w-sharing.type_outlined .w-sharing-item.twitter:hover {

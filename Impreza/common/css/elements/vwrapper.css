@@ -36,17 +36,3 @@ body:not(.rtl) .w-vwrapper.align_right {
 .w-vwrapper > .align_justify {
 	width: 100%;
 	}
-
-/* Link */
-.w-vwrapper.has-link {
-	position: relative;
-	}
-	.w-vwrapper-link {
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		margin: 0 !important;
-		z-index: 10;
-		}

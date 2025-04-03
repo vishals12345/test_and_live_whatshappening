@@ -35,7 +35,7 @@
 	height: inherit;
 	border-radius: inherit;
 	}
-.w-post-elm.has_height:not(.stretched) img {
+.w-post-elm.has_height:not(.stretched) img:not([src*=".svg"]) {
 	width: auto;
 	}
 
@@ -57,6 +57,12 @@
 /* Stretch the image to the container width */
 .w-post-elm.stretched img {
 	width: 100%;
+	}
+
+/* Post Title */
+.w-post-elm.post_title b {
+	font-size: .85em;
+	opacity: .5;
 	}
 
 /* Post Date */
@@ -151,10 +157,6 @@
 .w-post-elm.post_title {
 	padding: 0;
 	}
-	.w-post-elm.post_title b {
-		font-size: .85em;
-		opacity: .5;
-		}
 .w-grid div:not(.w-vwrapper) > .post_title {
 	margin-bottom: 0;
 	}

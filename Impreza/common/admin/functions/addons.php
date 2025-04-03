@@ -108,9 +108,6 @@ function us_addons_page() {
 				if ( empty( $plugin['premium'] ) ) {
 					continue;
 				}
-				if ( ! empty( $plugin['hide_in_list'] ) ) {
-					continue;
-				}
 
 				$keys = array_keys( $installed_plugins );
 

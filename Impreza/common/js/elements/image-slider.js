@@ -1,84 +1,67 @@
 /**
- * UpSolution Element: [us_image_slider].
+ * UpSolution Element: Image Slider
  */
-! function( $, _undefined ) {
-	"use strict";
-
-	/**
-	 * @class usImageSlider
-	 * @param {String} container The container
-	 */
-	function usImageSlider( container ) {
-		let self = this,
-			$container = $( container ),
-			$frame = $( '.w-slider-h', container ),
-			$royalSlider = $( '.royalSlider', container ),
-			options = {};
-
-		if ( ! $.fn.royalSlider || $container.data( 'usImageSlider' ) ) {
-			return;
-		}
-
-		// Gets options
-		let $jsonData = $( '.w-slider-json', container );
-		if ( $jsonData.length ) {
-			$.extend( options, $jsonData[0].onclick() || {} );
-		}
-		$jsonData.remove();
-
-		// Always apply certain fit option for grid listing slider
-		if ( $container.parent().hasClass( 'w-post-elm' ) ) {
-			options[ 'imageScaleMode' ] = 'fill';
-		}
-		options[ 'usePreloader' ] = false;
-
-		// https://dimsemenov.com/plugins/royal-slider/documentation/
-		$royalSlider.royalSlider( options );
-		let royalSlider = $royalSlider.data( 'royalSlider' );
-		if ( options.fullscreen && options.fullscreen.enabled ) {
-			// Moving royal slider to the very end of body element to allow a proper fullscreen
-			var rsEnterFullscreen = function() {
-				$royalSlider.appendTo( $us.$body );
-				royalSlider.ev.off( 'rsEnterFullscreen', rsEnterFullscreen );
-				royalSlider.ev.on( 'rsExitFullscreen', rsExitFullscreen );
-				royalSlider.updateSliderSize();
-			};
-			royalSlider.ev.on( 'rsEnterFullscreen', rsEnterFullscreen );
-			var rsExitFullscreen = function() {
-				$royalSlider.prependTo( $frame );
-				royalSlider.ev.off( 'rsExitFullscreen', rsExitFullscreen );
-				royalSlider.ev.on( 'rsEnterFullscreen', rsEnterFullscreen );
-			};
-		}
-
-		royalSlider.ev.on( 'rsAfterContentSet', function() {
-			royalSlider.slides.forEach( function( slide ) {
-				$( slide.content.find( 'img' )[0] ).attr( 'alt', slide.caption.attr( 'data-alt' ) );
-			} );
-		} );
-
-		$us.$canvas.on( 'contentChange', function() {
-			$royalSlider.parent().imagesLoaded( function() {
-				royalSlider.updateSliderSize();
-			} );
-		} );
-
-		self.royalSlider = royalSlider;
-	};
-
-	$.fn.usImageSlider = function() {
+( function( $ ) {
+	$.fn.wSlider = function() {
 		return this.each( function() {
-			$( this ).data( 'usImageSlider', new usImageSlider( this ) );
+			var $this = $( this ),
+				$frame = $this.find( '.w-slider-h' ),
+				$slider = $this.find( '.royalSlider' ),
+				$options = $this.find( '.w-slider-json' ),
+				options = $options[ 0 ].onclick() || {};
+
+			// Prevent double init
+			if ( $this.data( 'sliderInit' ) == 1 ) {
+				return;
+			}
+			$this.data( 'sliderInit', 1 );
+
+			$options.remove();
+			if ( ! $.fn.royalSlider ) {
+				return;
+			}
+			// Always apply certain fit option for grid listing slider
+			if ( $this.parent().hasClass( 'w-post-elm' ) ) {
+				options[ 'imageScaleMode' ] = 'fill';
+			}
+
+			options[ 'sliderDrag' ] = ! $us.usbPreview();
+			options[ 'usePreloader' ] = false;
+
+			$slider.royalSlider( options );
+			var slider = $slider.data( 'royalSlider' );
+			if ( options.fullscreen && options.fullscreen.enabled ) {
+				// Moving royal slider to the very end of body element to allow a proper fullscreen
+				var rsEnterFullscreen = function() {
+					$slider.appendTo( $( 'body' ) );
+					slider.ev.off( 'rsEnterFullscreen', rsEnterFullscreen );
+					slider.ev.on( 'rsExitFullscreen', rsExitFullscreen );
+					slider.updateSliderSize();
+				};
+				slider.ev.on( 'rsEnterFullscreen', rsEnterFullscreen );
+				var rsExitFullscreen = function() {
+					$slider.prependTo( $frame );
+					slider.ev.off( 'rsExitFullscreen', rsExitFullscreen );
+					slider.ev.on( 'rsEnterFullscreen', rsEnterFullscreen );
+				};
+			}
+
+			slider.ev.on( 'rsAfterContentSet', function() {
+				slider.slides.forEach( function( slide ) {
+					$( slide.content.find( 'img' )[ 0 ] ).attr( 'alt', slide.caption.attr( 'data-alt' ) );
+				} );
+			} );
+
+			$us.$canvas.on( 'contentChange', function() {
+				$slider.parent().imagesLoaded( function() {
+					slider.updateSliderSize();
+				} );
+			} );
 		} );
 	};
 
-	$( () => {
-		$( '.w-slider' ).usImageSlider();
+	$( function() {
+		$( '.w-slider' ).wSlider();
 	} );
 
-	// Init in Post\Product List or Grid context
-	$us.$document.on( 'usPostList.itemsLoaded usGrid.itemsLoaded', ( _, $items ) => {
-		$( '.w-slider', $items ).usImageSlider();
-	} );
-
-}( jQuery );
+} )( jQuery );

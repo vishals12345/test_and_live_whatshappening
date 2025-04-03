@@ -5,20 +5,26 @@
 .w-iconbox {
 	position: relative;
 	}
-	.w-iconbox > .w-iconbox-link {
+	.w-iconbox-link {
 		display: block; /* fix focus state in Chrome */
+		-webkit-flex-shrink: 0; /* fix for older Safari */
 		flex-shrink: 0;
+		transition: none;
 		-webkit-tap-highlight-color: rgba(0,0,0,0);
+		}
+	a.w-iconbox-link {
+		color: inherit;
 		}
 		.w-iconbox-icon {
 			display: inline-flex;
 			align-items: center;
 			justify-content: center;
+			-webkit-flex-shrink: 0; /* fix for older Safari */
 			flex-shrink: 0;
 			font-size: 2rem; /* default value */
 			text-align: center;
 			max-width: 100%;
-			transition: background .2s, color .2s, box-shadow .2s;
+			transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 			}
 		.w-iconbox:not(.icontype_img) .w-iconbox-icon {
 			line-height: 1;
@@ -32,14 +38,15 @@
 				height: auto;
 				width: 1em;
 				}
-		.w-iconbox-title {
+		.w-iconbox .w-iconbox-title {
 			margin-bottom: 0;
+			transition: color 0.2s;
 			}
-			.w-iconbox-title > a {
-				color: inherit;
-				}
-		.w-iconbox-title:not(:empty) {
-			padding: .5em 0;
+		.w-iconbox .w-iconbox-title:not(:empty) {
+			padding: 0.5em 0;
+			}
+		.no-touch .w-iconbox-link:hover .w-iconbox-title {
+			color: inherit;
 			}
 		.w-iconbox-text p:not(:last-child) {
 			margin-bottom: 0.75rem;
@@ -56,6 +63,7 @@
 /* ICONPOS left & right */
 .w-iconbox.iconpos_left,
 .w-iconbox.iconpos_right {
+	display: -webkit-flex; /* fix for older Safari */
 	display: flex;
 	align-items: flex-start;
 	}

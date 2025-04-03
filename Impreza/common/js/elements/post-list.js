@@ -4,19 +4,21 @@
 ;( function( $ ) {
 	"use strict";
 
-	const DELETE_FILTER = null;
-	const PAGINATION_PATTERN = /\/page\/?([0-9]{1,})\/?$/;
+	// Private variables that are used only in the context of this function, it is necessary to optimize the code.
+	var _history = history;
 
 	/**
 	 * @type {String} The original URL to return after closing the popup.
 	 */
-	let _originalURL;
+	var _originalURL;
 
 	/**
-	 * @param {Node} container.
+	 * @class WPostList - Functionality for the Post List element.
+	 * @param {String} container The container.
+	 * @param {{}} options The options.
 	 */
 	$us.WPostList = function( container ) {
-		const self = this;
+		var self = this;
 
 		// Private "variables"
 		self.data = {
@@ -34,11 +36,9 @@
 		self.$container = $( container );
 		self.$list = $( '.w-grid-list', container );
 		self.$loadmore = $( '.g-loadmore', container );
-		self.$pagination = $( 'nav.pagination', container );
-		self.$none = self.$container.next( '.w-grid-none' );
 
-		// Gets element settings
-		const $elmSettings = $( '.w-grid-list-json:first', container );
+		// Get element settings
+		var $elmSettings = $( '.w-grid-list-json:first', container );
 		if ( $elmSettings.is( '[onclick]' ) ) {
 			$.extend( self.data, $elmSettings[0].onclick() || {} );
 		}
@@ -46,17 +46,16 @@
 
 		self.paginationType = $ush.toString( self.data.pagination );
 
-		// Bondable events
+		/**
+		 * @var {{}} Bondable events.
+		 */
 		self._events = {
 			addNextPage: self._addNextPage.bind( self ),
-			closePostInPopup: self.closePostInPopup.bind( self ),
 			loadPostInPopup: self._loadPostInPopup.bind( self ),
 			navigationInPopup: self._navigationInPopup.bind( self ),
 			openPostInPopup: self._openPostInPopup.bind( self ),
-
-			usListOrder: self._usListOrder.bind( self ),
+			closePostInPopup: self.closePostInPopup.bind( self ),
 			usListSearch: self._usListSearch.bind( self ),
-			usListFilter: self._usListFilter.bind( self ),
 		};
 
 		// Load posts on button click or page scroll;
@@ -68,11 +67,7 @@
 		}
 
 		// Events
-		self.$container
-			.add( self.$none )
-			.on( 'usListSearch', self._events.usListSearch )
-			.on( 'usListOrder', self._events.usListOrder )
-			.on( 'usListFilter', self._events.usListFilter );
+		self.$container.on( 'usListSearch', self._events.usListSearch );
 
 		// Open posts in popup
 		if ( self.$container.hasClass( 'open_items_in_popup' ) ) {
@@ -98,133 +93,60 @@
 		}
 	};
 
-	const prototype = $us.WPostList.prototype;
+	var prototype = $us.WPostList.prototype;
 
 	// Post List API
 	$.extend( prototype, {
 
 		/**
-		 * Sets the search string from "List Search".
+		 * Applying the "List Search" string.
 		 *
 		 * @event handler
 		 * @param {Event} e The Event interface represents an event which takes place in the DOM.
-		 * @param {String} name
 		 * @param {String} value The search text.
+		 * @param {String} key The param name.
 		 */
-		_usListSearch: function( e, name, value ) {
-			this.applyFilter( name, value );
+		_usListSearch: function( e, value, key ) {
+			var self = this;
+			self.data.paged = 0;
+			self.data.ajaxData.list_search = $ush.toString( value );
+			self.$list.html(''); // clear item list
+			self.$loadmore.removeClass( 'hidden' );
+			$( '.w-grid-none', self.$container ).remove();
+			if ( ! $ush.isUndefined( self.xhr ) ) {
+				self.xhr.abort();
+			}
+			self.addItems();
 		},
 
 		/**
-		 * Sets orderby from "List Order".
+		 * Add next page.
 		 *
 		 * @event handler
 		 * @param {Event} e The Event interface represents an event which takes place in the DOM.
-		 * @param {String} name
-		 * @param {String} value The search text.
 		 */
-		_usListOrder: function( e, name, value ) {
-			this.applyFilter( name, value );
-		},
-
-		/**
-		 * Sets values from "List Filter".
-		 *
-		 * @event handler
-		 * @param {Event} e The Event interface represents an event which takes place in the DOM.
-		 * @param {{}} values
-		 */
-		_usListFilter: function( e, values ) {
-			const self = this;
-			$.each( values, self.applyFilter.bind( self ) );
-		},
-
-		/**
-		 * Adds next page.
-		 *
-		 * @event handler
-		 */
-		_addNextPage: function() {
-			const self = this;
-			if ( $ush.isUndefined( self.xhr ) && ! self.$none.is( ':visible' ) ) {
+		_addNextPage: function( e ) {
+			var self = this;
+			if ( $ush.isUndefined( self.xhr ) ) {
 				self.addItems();
 			}
 		},
 
 		/**
-		 * Apply param to "Post/Product List".
-		 *
-		 * @param {String} name
-		 * @param {String} value
+		 * Add items to element.
 		 */
-		applyFilter: function( name, value ) {
-			const self = this;
-			if ( $ush.toString( value ) == '{}' ) {
-				value = DELETE_FILTER;
-			}
-
-			// Reset pagination
-			const pathname = location.pathname;
-			if ( PAGINATION_PATTERN.test( pathname ) ) {
-				history.pushState( {}, '', location.href.replace( pathname, pathname.replace( PAGINATION_PATTERN, '' ) + '/' ) );
-			}
-			self.data.paged = 0;
-
-			if ( self.$container.hasClass( 'for_current_wp_query' ) ) {
-				self.data.ajaxUrl = $ush
-					.urlManager( self.data.ajaxUrl )
-					.set( name, value )
-					.toString();
-
-			} else if ( value === DELETE_FILTER ) {
-				delete self.data.ajaxData[ name ];
-
-			} else {
-				self.data.ajaxData[ name ] = value;
-			}
-
-			self.$list.html('');
-			$( '.w-grid-none', self.$container ).remove();
-
-			if ( ! $ush.isUndefined( self.xhr ) ) {
-				self.xhr.abort();
-			}
-			self.addItems( /* filtersChanged */true );
-
-			// Scrolls to element
-			if ( ! $ush.isNodeInViewport( self.$container[0] ) ) {
-				$us.$htmlBody
-					.stop( true, false )
-					.delay( 3 )
-					.animate( { scrollTop: $ush.parseInt( self.$container.offset().top ) - $us.header.getInitHeight() }, 500 );
-			}
-		},
-
-		/**
-		 * Adds items to element.
-		 *
-		 * @param {Boolean} filtersChanged
-		 */
-		addItems: $ush.debounce( function( filtersChanged ) {
-			const self = this;
+		addItems: function() {
+			var self = this;
 
 			self.data.paged += 1;
-			if ( ! filtersChanged && self.data.paged > self.data.max_num_pages ) {
-				return;
-			}
-
-			self.$container.removeClass( 'hidden' );
-			self.$loadmore.removeClass( 'hidden' ).addClass( 'loading' );
-			self.$pagination.addClass( 'hidden' );
-			self.$none.addClass( 'hidden' );
+			self.$loadmore.addClass( 'loading' );
 
 			// Get request link and data
-			let ajaxUrl = $ush.toString( self.data.ajaxUrl ),
-				ajaxData = $ush.clone( self.data.ajaxData ),
-				numPage = $ush.rawurlencode( '{num_page}' );
+			var ajaxUrl = $ush.toString( self.data.ajaxUrl ),
+				ajaxData = $ush.clone( self.data.ajaxData );
 
-			if ( ajaxUrl.includes( numPage ) ) {
-				ajaxUrl = ajaxUrl.replace( numPage, self.data.paged );
+			if ( ajaxUrl.indexOf( '{num_page}' ) > -1 ) {
+				ajaxUrl = ajaxUrl.replace( '{num_page}', self.data.paged );
 
 			} else if ( ajaxData.template_vars ) {
 				ajaxData.template_vars = JSON.stringify( ajaxData.template_vars ); // convert for `us_get_HTTP_POST_json()`
@@ -234,89 +156,60 @@
 			self.xhr = $.ajax( {
 				type: 'post',
 				url: ajaxUrl,
+				cache: false,
 				dataType: 'html',
 				data: ajaxData,
 				success: function( html ) {
-					let $items = $( '.w-grid-list:first > *', html );
-
-					// Case when there are no results
-					if ( ! $items.length ) {
-						if ( ! self.$none.length ) {
-							self.$none = $( '.w-grid-none:first', html );
-							if ( ! self.$none.length ) {
-								self.$none = $( html ).filter( '.w-grid-none:first' );
-							}
-							self.$container.after( self.$none );
+					var $items = $( '.w-grid-list:first > *', html );
+					if ( $items.length ) {
+						if ( self.$container.hasClass( 'type_masonry' ) ) {
+							self.$list
+								.isotope( 'insert', $items )
+								.isotope( 'reloadItems' );
+						} else {
+							self.$list.append( $items );
 						}
+						// Init animation handler for new items
+						if ( self.$container.hasClass( 'with_css_animation' ) ) {
+							new USAnimate( self.$list );
+							$us.$window.trigger( 'scroll.waypoints' );
+						}
+						// Init plugins or elementts
+						$ush.timeout( function() {
+							$( '[data-content-height]', $items ).usCollapsibleContent();
+							$( '.w-slider', $items ).wSlider();
+						}, 1 );
+						// Reload element settings
+						var $elmSettings = $( '.w-grid-list-json:first', html );
+						if ( $elmSettings.is( '[onclick]' ) ) {
+							$.extend( true, self.data, $elmSettings[0].onclick() || {} );
+						}
+					}
+					else if ( self.data.paged === 1 ) {
+						self.$container.append( $( html ).filter( '.w-grid-none:first' ) );
 						self.$loadmore.addClass( 'hidden' );
-						self.$pagination.addClass( 'hidden' );
-						self.$none.removeClass( 'hidden' );
+						return;
+					}
+					// After loading all posts, disable pagination
+					if ( ! $items.length || self.data.paged >= self.data.max_num_pages ) {
+						self.$loadmore.addClass( 'hidden' );
 						return
 					}
-
-					// Output of results
-					if ( self.$container.hasClass( 'type_masonry' ) ) {
-						self.$list
-							.isotope( 'insert', $items )
-							.isotope( 'reloadItems' );
-					} else {
-						self.$list.append( $items );
-					}
-
-					// Init animation handler for new items
-					if ( window.USAnimate && self.$container.hasClass( 'with_css_animation' ) ) {
-						new USAnimate( self.$list );
-						$us.$window.trigger( 'scroll.waypoints' );
-					}
-
-					// List items loaded
-					$ush.timeout( () => {
-						$us.$document.trigger( 'usPostList.itemsLoaded', [ $items ] );
-					}, 1 );
-
-					// Reload element settings
-					let $listJson = $( '.w-grid-list-json:first', html );
-					if ( $listJson.is( '[onclick]' ) ) {
-						$.extend( true, self.data, $listJson[0].onclick() || {} );
-					}
-
-					// Case with numbered pagination
-					if ( self.paginationType == 'numbered' ) {
-						const $pagination = $( 'nav.pagination', html );
-						if ( $pagination.length && ! self.$pagination.length ) {
-							self.$list.after( $pagination.prop( 'outerHTML' ) );
-							self.$pagination = self.$list.next( 'nav.pagination' );
-						}
-						if ( self.$pagination.length && $pagination.length ) {
-							self.$pagination.html( $pagination.html() ).removeClass( 'hidden' );
-
-						} else {
-							self.$pagination.addClass( 'hidden' );
-						}
-					}
-
-					// Case when the last page is loaded
-					if ( self.data.paged >= self.data.max_num_pages ) {
-						self.$loadmore.addClass( 'hidden' );
-						self.$none.addClass( 'hidden' );
-
-					} else {
-						self.$loadmore.removeClass( 'hidden' );
-					}
-
-					// Adds point to load the next page
+					// Add point to load the next page
 					if ( self.paginationType == 'load_on_scroll' ) {
 						$us.waypoints.add( self.$loadmore, /* offset */'-70%', self._events.addNextPage );
 					}
-
 					$us.$canvas.trigger( 'contentChange' );
+
+					self.$loadmore.removeClass( 'loading' );
+					delete self.xhr;
 				},
-				complete: function() {
+				error: function() {
 					self.$loadmore.removeClass( 'loading' );
 					delete self.xhr;
 				}
 			} );
-		}, 1 ),
+		}
 
 	} );
 
@@ -330,7 +223,7 @@
 		 * @param {Event} e The Event interface represents an event which takes place in the DOM.
 		 */
 		_openPostInPopup: function( e ) {
-			const self = this;
+			var self = this;
 
 			// If scripts are disabled on a given screen width, then exit
 			if ( $us.$window.width() <= $us.canvasOptions.disableEffectsWidth ) {
@@ -349,7 +242,7 @@
 			// Show popup
 			$us.$html.addClass( 'usoverlay_fixed' );
 			self.$popup.addClass( 'active' );
-			$ush.timeout( () => {
+			$ush.timeout( function() {
 				self.$popupBox.addClass( 'show' );
 			}, 25 );
 		},
@@ -360,7 +253,7 @@
 		 * @event handler
 		 */
 		_loadPostInPopup: function() {
-			const self = this;
+			var self = this;
 
 			// Closing the post popup using escape
 			function checkEscape( e ) {
@@ -385,15 +278,15 @@
 		},
 
 		/**
-		 * Sets post by index in the list.
+		 * Set post by index in the list.
 		 *
 		 * @param {String} url The new value.
 		 */
 		setPostInPopup: function( index ) {
-			const self = this;
+			var self = this;
 
 			// Get current node and url
-			let $node = $( '> *:eq(' + $ush.parseInt( index ) + ')', self.$list ),
+			var $node = $( '> *:eq(' + $ush.parseInt( index ) + ')', self.$list ),
 				url = $ush.toString( $( '[href]:first', $node ).attr( 'href' ) );
 
 			// If there is no href, then exit
@@ -403,7 +296,7 @@
 			}
 
 			// Gen prev / next node
-			let $prev = $node.prev( ':not(.custom-link)' ),
+			var $prev = $node.prev( ':not(.custom-link)' ),
 				$next = $node.next( ':not(.custom-link)' );
 
 			// Pagination controls switch
@@ -422,7 +315,7 @@
 				.attr( 'src', url + ( url.indexOf( '?' ) > -1 ? '&' : '?' ) + 'us_iframe=1' );
 
 			// Set post link in URL
-			history.replaceState( /* state */null, /* unused */null, url );
+			_history.replaceState( /* state */null, /* unused */null, url );
 		},
 
 		/**
@@ -431,7 +324,7 @@
 		 * @event handler
 		 */
 		closePostInPopup: function() {
-			const self = this;
+			var self = this;
 			self.$popupBox
 				.removeClass( 'show' )
 				.one( 'transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd', function() {
@@ -445,19 +338,17 @@
 
 			// Restore original URL
 			if ( _originalURL ) {
-				history.replaceState( /* state */null, /* unused */null, _originalURL );
+				_history.replaceState( /* state */null, /* unused */null, _originalURL );
 			}
 		}
 	} );
 
-	$.fn.wPostList = function() {
+	$.fn.wPostList = function( options ) {
 		return this.each( function() {
-			$( this ).data( 'WPostList', new $us.WPostList( this ) );
+			$( this ).data( 'WPostList', new $us.WPostList( this, options ) );
 		} );
 	};
 
-	$( () => {
-		$( '.w-grid.us_post_list, .w-grid.us_product_list' ).wPostList();
-	} );
+	$( '.w-grid.us_post_list, .w-grid.us_product_list' ).wPostList();
 
 } )( jQuery );

@@ -149,13 +149,22 @@ h3.widgettitle {
 			padding-left: 3.6em;
 			}
 
+/* Links Hover Underline
+   ========================================================================== */
+.no-touch .links_underline #wp-calendar td a:hover,
+.no-touch .links_underline .widget_tag_cloud a:hover {
+	border-bottom: 1px solid;
+	}
+
 /* Responsive
    ========================================================================== */
 @media screen and (max-width: 600px) {
-.widget_us_portfolio .w-grid.type_grid {
-	--columns: 3 !important;
+.widget_us_portfolio .w-grid.cols_4 .w-grid-item,
+.widget_us_portfolio .w-grid.cols_5 .w-grid-item,
+.widget_us_portfolio .w-grid.cols_6 .w-grid-item {
+	width: 33.3333% !important;
 	}
-.l-main .widget {
+.l-section .widget {
 	margin-bottom: 2rem;
 	}
 }

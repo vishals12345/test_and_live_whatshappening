@@ -14,11 +14,11 @@
 		vertical-align: top;
 		line-height: inherit;
 		}
-	.w-text:not(.no_text).icon_atleft i {
-		margin-inline-end: .4em;
+	.w-text.icon_atleft i {
+		margin-right: .4em;
 		}
-	.w-text:not(.no_text).icon_atright i {
-		margin-inline-start: .4em;
+	.w-text.icon_atright i {
+		margin-left: .4em;
 		}
 	.w-text-value:empty {
 		display: none;

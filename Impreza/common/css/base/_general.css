@@ -31,8 +31,9 @@ template {
 a {
 	text-decoration: none;
 	background: none;
-	transition-property: background, box-shadow, border, color, opacity, text-decoration-color, text-underline-offset, transform;
-	transition-duration: .2s;
+	transition-property: background, box-shadow, border, color, opacity, transform;
+	transition-duration: 0.3s;
+	-webkit-text-decoration-skip: objects;
 	}
 b,
 strong {
@@ -103,6 +104,8 @@ select[multiple] {
 	}
 textarea {
 	overflow: auto;
+	height: 8rem;
+	min-height: 3rem;
 	resize: vertical;
 	}
 input:not([type=submit]),
@@ -363,46 +366,23 @@ blockquote:last-child {
 input:not([type=submit]),
 textarea,
 select {
-	font-family: var( --inputs-font-family, inherit );
-	font-size: var( --inputs-font-size, inherit );
-	font-weight: var( --inputs-font-weight, inherit );
-	letter-spacing: var( --inputs-letter-spacing, inherit );
-	text-transform: var( --inputs-text-transform, inherit );
-	border-radius: var( --inputs-border-radius, 0px );
-	background: var( --inputs-background, transparent );
-	border-color: var( --inputs-border-color, currentColor );
-	color: var( --inputs-text-color, inherit );
-	box-shadow: var( --inputs-box-shadow, none );
-	border-width: var( --inputs-border-width, 1px );
-	border-style: solid;
 	width: 100%;
+	font-size: var(--inputs-font-size);
+	border: var(--inputs-border-width, 0px) solid transparent; /* default "solid" style is needed */
+	background: none;
 	transition: all 0.2s;
 	}
-input[type=date],
-input[type=datetime-local],
-input[type=email],
-input[type=file],
-input[type=month],
-input[type=number],
-input[type=password],
-input[type=search],
-input[type=tel],
-input[type=text],
-input[type=time],
-input[type=url],
-input[type=week],
+input:not([type=submit]),
 select {
-	min-height: var(--inputs-height, 2em);
-	line-height: var(--inputs-height, 2em);
-	padding: 0 var(--inputs-padding, .6em);
+	min-height: var(--inputs-height);
+	line-height: var(--inputs-height);
+	padding: 0 var(--inputs-padding);
 	}
 select {
-	height: calc( var(--inputs-height, 2em) + var(--inputs-border-width, 1px) * 2 ); /* fallback for correct height */
+	height: calc( var(--inputs-height) + var(--inputs-border-width) * 2 ); /* fallback for correct height */
 	}
 textarea {
-	min-height: var(--inputs-height, 2em);
-	height: calc( var(--inputs-height, 2em) * 3 );
-	padding: calc( var(--inputs-height, 2em)/2 + var(--inputs-border-width, 1px) - 0.7em ) var(--inputs-padding, .6em);
+	padding: calc( var(--inputs-height)/2 + var(--inputs-border-width, 0px) - 0.7em ) var(--inputs-padding);
 	}
 input[type=checkbox],
 input[type=radio] {
@@ -410,14 +390,16 @@ input[type=radio] {
 	appearance: none;
 	vertical-align: top;
 	flex-shrink: 0;
+	font-size: .75em;
 	text-align: center;
+	margin-top: .2em;
 	margin-right: .5em;
-	letter-spacing: 0;
-	text-transform: none;
-	line-height: var( --inputs-checkbox-size, 1.5em );
-	height: var( --inputs-checkbox-size, 1.5em );
-	width: var( --inputs-checkbox-size, 1.5em );
-	padding: 0;
+	line-height: 1.5em;
+	height: 1.5em;
+	width: 1.5em;
+	min-height: 0 !important;
+	padding: 0 !important;
+	border: var(--inputs-border-width, 0px) solid transparent; /* default "solid" style is needed */
 	box-sizing: content-box;
 	}
 	input[type=checkbox]:before {
@@ -446,14 +428,6 @@ input[type=radio] {
 input[type=range] {
 	box-shadow: none !important;
 	}
-input:not([type=submit]):focus,
-select:focus,
-textarea:focus {
-	background: var( --inputs-focus-background, transparent );
-	border-color: var( --inputs-focus-border-color, currentColor );
-	color: var( --inputs-focus-text-color, inherit );
-	box-shadow: var( --inputs-focus-box-shadow, none );
-	}
 
 /* Common styles
    ========================================================================== */
@@ -461,6 +435,11 @@ textarea:focus {
 	display: none !important;
 	}
 
+/* .i-cf:before, */
+/* .i-cf:after { */
+	/* content: ' '; */
+	/* display: table; */
+	/* } */
 .i-cf:after {
 	content: '';
 	display: block;
@@ -552,13 +531,6 @@ a {
 	}
 .highlight_faded {
 	color: var(--color-content-faded);
-	}
-
-/* Importance is needed to overwite Design styles */
-.l-body .background_inside_text {
-	background-clip: text !important;
-	-webkit-background-clip: text !important;
-	color: transparent !important;
 	}
 
 /* Basic layout
@@ -841,9 +813,8 @@ body.us_iframe {
 	overflow: hidden;
 	transform: translateZ(0); /* overflow fix for Safari */
 	}
-	html.ios-touch .l-section.parallax_ver > .l-section-img,
-	html.ios-touch .l-section.parallax_fixed > .l-section-img,
-	html.touch .l-section.parallax_fixed > .l-section-img,
+	.ios-touch .l-section.parallax_ver > .l-section-img,
+	.ios-touch .l-section.parallax_fixed > .l-section-img,
 	.l-section.with_slider > .l-section-img,
 	.l-section.with_video > .l-section-img {
 		background-attachment: scroll !important;
@@ -878,6 +849,39 @@ body.us_iframe {
 .l-header.bg_solid ~ .l-main .vc_column-inner > .w-post-elm > .l-section > .l-section-h,
 .templatera_shortcode > .l-section > .l-section-h {
 	padding-top: 0 !important;
+	}
+
+/* Columns in Grid Masonry, Carousel, gallery, form fields
+   ========================================================================== */
+.cols_1 > div[class*="list"] > * {
+	width: 100%;
+	}
+.cols_2 > div[class*="list"] > * {
+	width: 50%;
+	}
+.cols_3 > div[class*="list"] > * {
+	width: 33.3333%;
+	}
+.cols_4 > div[class*="list"] > * {
+	width: 25%;
+	}
+.cols_5 > div[class*="list"] > * {
+	width: 20%;
+	}
+.cols_6 > div[class*="list"] > * {
+	width: 16.6666%;
+	}
+.cols_7 > div[class*="list"] > * {
+	width: 14.2857%;
+	}
+.cols_8 > div[class*="list"] > * {
+	width: 12.5%;
+	}
+.cols_9 > div[class*="list"] > * {
+	width: 11.1111%;
+	}
+.cols_10 > div[class*="list"] > * {
+	width: 10%;
 	}
 
 /* Theme base elements
@@ -974,20 +978,6 @@ body.us_iframe {
 	background-repeat: no-repeat;
 	background-size: contain;
 	}
-
-/* WordPress image captions */
-.wp-caption {
-	line-height: 0;
-	margin-bottom: 1.5rem;
-	max-width: 100%;
-	position: relative;
-	}
-	.wp-caption-text {
-		display: block;
-		font-size: .85rem;
-		line-height: 1.6;
-		margin: .5rem 0 0;
-		}
 
 /* WordPress Post pagination */
 .post-pagination {
@@ -1167,11 +1157,6 @@ html.ios-touch [class*="us_custom_"] {
 	background-attachment: scroll !important;
 	}
 
-/* Hide container with empty Grid/List element */
-.hide_if_inner_list_is_empty:has(.w-grid.hidden) {
-	display: none !important;
-	}
-
 /* Fixes when VC applies own styles
    ========================================================================== */
 .l-body .vc_row:after,
@@ -1311,6 +1296,20 @@ blockquote.is-style-large,
 .rounded_none .w-header-show,
 .rounded_none .w-toplink {
 	border-radius: 0 !important;
+	}
+
+/* Links Hover Underline
+   ========================================================================== */
+.no-touch .links_underline h1 a:hover,
+.no-touch .links_underline h2 a:hover,
+.no-touch .links_underline h3 a:hover,
+.no-touch .links_underline h4 a:hover,
+.no-touch .links_underline h5 a:hover,
+.no-touch .links_underline h6 a:hover,
+.no-touch .links_underline p a:not(.w-btn):not(.button):hover,
+.no-touch .links_underline li a:not(.w-btn):not(.button):hover,
+.no-touch .links_underline .g-breadcrumbs a:hover {
+	border-bottom: 1px solid;
 	}
 
 /* Responsive

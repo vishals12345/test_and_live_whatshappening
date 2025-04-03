@@ -18,7 +18,7 @@
 		overflow: hidden;
 		line-height: 2.5em;
 		width: 2.5em;
-		text-decoration: none !important;
+		border: none !important;
 		border-radius: inherit;
 		z-index: 0;
 		}
@@ -80,7 +80,7 @@
 			height: 0;
 			border-left: 8px solid transparent;
 			border-right: 8px solid transparent;
-			border-top: 8px solid #222;
+			border-top: 8px solid #333;
 			}
 
 /* Header element */
@@ -402,7 +402,7 @@
 		background: #6441a5;
 		}
 
-/* X (Twitter) */
+/* Twitter */
 .w-socials.color_brand .w-socials-item.twitter .w-socials-item-link {
 	color: #0f1419;
 	}

@@ -19,6 +19,7 @@ $us_theme_supports = array(
 		'js_composer' => 'plugins-support/js_composer/js_composer.php',
 		'post_views_counter' => 'plugins-support/post_views_counter.php',
 		'revslider' => 'plugins-support/revslider.php',
+		'tablepress' => 'plugins-support/tablepress.php',
 		'the-events-calendar' => 'plugins-support/the_events_calendar.php',
 		'tiny_mce' => 'plugins-support/tiny_mce.php',
 		'Ultimate_VC_Addons' => 'plugins-support/Ultimate_VC_Addons.php',

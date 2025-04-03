@@ -17,7 +17,11 @@ include_once('my-acf-extension.php');
 include_once('google_adsense_index_page.php');
 include_once('create_category_list_for_post_site.php');
 include_once('create_tag_for_grid.php');
-
+include_once('custom_events_list_filter.php');
+include_once('custom_locations_list_filter.php');
+include_once('dynamic_search.php');
+include_once('dynamic_breadcrumbs.php');
+include_once('dynamic_search.php');
 
 /**
  * Block wp-admin access for non-admins
@@ -69,6 +73,10 @@ function shortcodes_init(){
   add_shortcode('get_category_list_for_post', 'get_category_list_for_post_site');
   // create_tag_for_grid
   add_shortcode('create_tag_for_grid', 'create_tag_for_grid');
+  // Dynamic breadcrumbs
+  add_shortcode('dynamic_breadcrumbs', 'generate_breadcrumbs');
+  // Dynamic search
+  add_shortcode('my_search', 'my_search_shortcode');
 }
 add_action('init', 'shortcodes_init');
 
@@ -78,9 +86,9 @@ add_action('init', 'shortcodes_init');
   */
 function connect_another_db() {
     global $seconddb;
-    $seconddb = new wpdb('', '', 'wp_whats_db1','hw8z.your-database.de');
+    $seconddb = new wpdb('', '', 'web119_db6','s193.goserver.host');
 }
-//add_action('init', 'connect_another_db');
+add_action('init', 'connect_another_db');
 
 /*
 * Disable admin bar for non Admins
@@ -133,34 +141,96 @@ add_filter( 'query_vars', 'myplugin_register_query_vars' );
  * Add rewrite tags and rules
  */
 function myplugin_rewrite_tag_rule() {
-	add_rewrite_tag( '%eventcity%', '([^&]+)', 'eventcity=');
-  add_rewrite_rule( '^london/?$', 'index.php?pagename=london','top' );
-  add_rewrite_rule( '^birmingham/?$', 'index.php?pagename=birmingham','top' );
-  add_rewrite_rule( '^about-us/?$', 'index.php?pagename=about-us','top' );
-  add_rewrite_rule( '^events/?$', 'index.php?pagename=all_events','top' );
-  add_rewrite_rule( '^locations/?$', 'index.php?pagename=locations','top' );
-  add_rewrite_rule( '^listing/?$', 'index.php?pagename=listing','top' );
-  add_rewrite_rule( '^([^/]*)/category/([^/]*)?$', 'index.php?pagename=events-by-city-and-category&eventcity=$matches[1]&category=$matches[2]','top' );
-//  add_rewrite_rule( '^locations/([^/]*)?$', 'index.php?pagename=locations&location=$matches[1]','top' );
-  add_rewrite_rule( '^my-account/?$', 'index.php?pagename=my-account','top' );
-  add_rewrite_rule( '^my-events/?$', 'index.php?pagename=my-events','top' );
-  add_rewrite_rule( '^new-event-added/?$', 'index.php?pagename=new-event-added','top' );
-  add_rewrite_rule( '^new-location-added/?$', 'index.php?pagename=new-location-added','top' );
-  add_rewrite_rule( '^delete-event/([^/]*)?$', 'index.php?pagename=delete-event&evid=$matches[1]','top' );
-  add_rewrite_rule( '^add-new-event/?$', 'index.php?pagename=add-new-event','top' );
-  add_rewrite_rule( '^add-new-location/?$', 'index.php?pagename=add-new-location','top' );
-  add_rewrite_rule( '^edit-event/([^/]*)?$', 'index.php?pagename=edit-event&evid=$matches[1]','top' );
-  add_rewrite_rule( '^all-events/?$', 'index.php?pagename=now-and-next','top' );
-  add_rewrite_rule( '^today/?$', 'index.php?pagename=today','top' );
-  add_rewrite_rule( '^this-month/?$', 'index.php?pagename=this-month','top' );
-  add_rewrite_rule( '^([^/]*)/all-events/?$', 'index.php?pagename=now-and-next-city&eventcity=$matches[1]','top' );
-  add_rewrite_rule( '^([^/]*)/today/?$', 'index.php?pagename=events-city-today&eventcity=$matches[1]','top' );
-  add_rewrite_rule( '^([^/]*)/this-month/?$', 'index.php?pagename=events-this-month-city&eventcity=$matches[1]','top' );
-	add_rewrite_rule( '^([^/]*)/events/?$', 'index.php?pagename=events_by_city&eventcity=$matches[1]','top' );
-  add_rewrite_rule( '^cities/?$', 'index.php?pagename=cities','top' );
-  add_rewrite_rule( '^([^/]*)/?$', 'index.php?pagename=city&eventcity=$matches[1]','top' );
+  
+  // rewrite tag for event city page
+  add_rewrite_tag('%eventcity%', '([^&]+)', 'eventcity=');
+
+  // rewrite tag for category page
+  add_rewrite_tag('%category%', '([^&]+)', 'category=');
+  
+  // location tag for location page
+  add_rewrite_tag('%location%', '([^&]+)', 'location='); 
+
+  // Bestehende Regeln
+  add_rewrite_rule('^about-us/?$', 'index.php?pagename=about-us', 'top');
+  add_rewrite_rule('^events/?$', 'index.php?pagename=all_events', 'top');
+  add_rewrite_rule('^locations/?$', 'index.php?pagename=locations', 'top');
+  add_rewrite_rule('^listing/?$', 'index.php?pagename=listing', 'top');
+  add_rewrite_rule('^my-account/?$', 'index.php?pagename=my-account', 'top');
+  add_rewrite_rule('^my-events/?$', 'index.php?pagename=my-events', 'top');
+  add_rewrite_rule('^new-event-added/?$', 'index.php?pagename=new-event-added', 'top');
+  add_rewrite_rule('^new-location-added/?$', 'index.php?pagename=new-location-added', 'top');
+  add_rewrite_rule('^delete-event/([^/]*)?$', 'index.php?pagename=delete-event&evid=$matches[1]', 'top');
+  add_rewrite_rule('^add-new-event/?$', 'index.php?pagename=add-new-event', 'top');
+  add_rewrite_rule('^add-new-location/?$', 'index.php?pagename=add-new-location', 'top');
+  add_rewrite_rule('^edit-event/([^/]*)?$', 'index.php?pagename=edit-event&evid=$matches[1]', 'top');
+  add_rewrite_rule('^all-events/?$', 'index.php?pagename=events-now-and-next', 'top');
+  add_rewrite_rule('^today/?$', 'index.php?pagename=today', 'top');
+  add_rewrite_rule('^this-month/?$', 'index.php?pagename=this-month', 'top');
+  add_rewrite_rule('^([^/]*)/all-events/?$', 'index.php?pagename=now-and-next-city&eventcity=$matches[1]', 'top');
+  add_rewrite_rule('^([^/]*)/today/?$', 'index.php?pagename=events-city-today&eventcity=$matches[1]', 'top');
+  add_rewrite_rule('^([^/]*)/this-month/?$', 'index.php?pagename=events-this-month-city&eventcity=$matches[1]', 'top');
+  add_rewrite_rule('^([^/]*)/events/?$', 'index.php?pagename=events_by_city&eventcity=$matches[1]', 'top');
+  add_rewrite_rule('^cities/?$', 'index.php?pagename=cities', 'top');
+  add_rewrite_rule('^([^/]*)/?$', 'index.php?pagename=city&eventcity=$matches[1]', 'top');
+  
+  // rewrite for custom post type category page
+  add_rewrite_rule('^([^/]*)/([^/]*)/?$', 'index.php?pagename=events-by-city-and-category&eventcity=$matches[1]&category=$matches[2]', 'top');
+  
+  // rewrite for custom post type single page (event)
+  add_rewrite_rule('^([^/]*)/events/([^/]*)/?$', 'index.php?eventcity=$matches[1]&name=$matches[2]', 'top');
+  
+  // rewrite rule for location page
+  add_rewrite_rule('^([^/]*)/(restaurant|bar|pub|spot|cafe|club|theatre)/([^/]*)/?$', 'index.php?eventcity=$matches[1]&location=$matches[3]', 'top');
+
+  // redirect non-location pages to 404
+  add_rewrite_rule('^([^/]*)/(?!restaurant|bar|pub|spot|cafe|club|theatre)([^/]*)/?$', 'index.php?error=404', 'top');
 }
 add_action('init', 'myplugin_rewrite_tag_rule');
+
+// Weiterleitungsfunktion hinzufügen
+function redirect_old_location_url() {
+  if (preg_match('/^\/location\/([^\/]+)\/?$/', $_SERVER['REQUEST_URI'], $matches)) {
+      $eventcity = isset($_POST['city']) ? sanitize_text_field($_POST['city']) : 'default-city';
+      $new_url = home_url('/' . $eventcity . '/location/' . $matches[1] . '/');
+      wp_redirect($new_url, 301);
+      exit;
+  }
+}
+
+// Entfernen der Kategorie-Basis
+function remove_category_base() {
+  global $wp_rewrite;
+  $wp_rewrite->extra_permastructs['category']['struct'] = '%category%';
+}
+add_action('init', 'remove_category_base');
+
+// Kategorie-Links anpassen
+function custom_category_link($termlink, $term, $taxonomy) {
+  if ($taxonomy == 'category') {
+      $termlink = str_replace('/category/', '/', $termlink);
+  }
+  return $termlink;
+}
+add_filter('term_link', 'custom_category_link', 10, 3);
+
+// Kategorie-Basis aus den URLs entfernen
+function fix_category_pagination($redirect_url, $requested_url) {
+  if (strpos($redirect_url, '/category/') !== false) {
+      $redirect_url = str_replace('/category/', '/', $redirect_url);
+  }
+  return $redirect_url;
+}
+add_filter('redirect_canonical', 'fix_category_pagination', 10, 2);
+
+// Kategorie-Basis aus den Breadcrumbs entfernen (falls Impreza Breadcrumbs verwendet)
+function fix_breadcrumbs_category_base($link, $term) {
+  if ($term->taxonomy == 'category') {
+      $link = str_replace('/category/', '/', $link);
+  }
+  return $link;
+}
+add_filter('wpseo_breadcrumb_single_link', 'fix_breadcrumbs_category_base', 10, 2);
 
 
 function wp_tuts_filter_post_link( $permalink, $post ) {
@@ -649,7 +719,7 @@ function create_location_cpt() {
         'hierarchical' => true
   ));
   register_taxonomy('location_tag','location',array(
-        'label'        => 'Loc_Tags',
+        'label'        => 'City',
         'query_var'    => true,
         'rewrite'      => true,
         'hierarchical' => true
@@ -658,4 +728,105 @@ function create_location_cpt() {
 }
 add_action( 'init', 'create_location_cpt', 0 );
 
-?>
+function rename_post_type() {
+    global $wp_post_types;
+    // Get the post object
+    $post_type = 'post';
+    if (isset($wp_post_types[$post_type])) {
+        $labels = &$wp_post_types[$post_type]->labels;
+        $labels->name = 'Events';
+        $labels->singular_name = 'Event';
+        $labels->add_new = 'Add Event';
+        $labels->add_new_item = 'Add New Event';
+        $labels->edit_item = 'Edit Event';
+        $labels->new_item = 'New Event';
+        $labels->view_item = 'View Event';
+        $labels->search_items = 'Search Events';
+        $labels->not_found = 'No Events found';
+        $labels->not_found_in_trash = 'No Events found in Trash';
+        $labels->all_items = 'All Events';
+        $labels->menu_name = 'Events';
+        $labels->name_admin_bar = 'Event';
+    }
+}
+add_action('init', 'rename_post_type');
+
+function rename_post_menu_label() {
+    global $menu;
+    global $submenu;
+    $menu[5][0] = 'Events';
+    $submenu['edit.php'][5][0] = 'Events';
+    $submenu['edit.php'][10][0] = 'Add Event';
+    $submenu['edit.php'][16][0] = 'Event Tags';
+    echo '';
+}
+add_action('admin_menu', 'rename_post_menu_label');
+
+function rename_post_object_label() {
+    global $wp_post_types;
+    $wp_post_types['post']->labels->name = 'Events';
+    $wp_post_types['post']->labels->singular_name = 'Event';
+    $wp_post_types['post']->labels->add_new = 'Add Event';
+    $wp_post_types['post']->labels->add_new_item = 'Add Event';
+    $wp_post_types['post']->labels->edit_item = 'Edit Event';
+    $wp_post_types['post']->labels->new_item = 'Event';
+    $wp_post_types['post']->labels->view_item = 'View Event';
+    $wp_post_types['post']->labels->search_items = 'Search Events';
+    $wp_post_types['post']->labels->not_found = 'No Events found';
+    $wp_post_types['post']->labels->not_found_in_trash = 'No Events found in Trash';
+    $wp_post_types['post']->labels->all_items = 'All Events';
+    $wp_post_types['post']->labels->menu_name = 'Events';
+    $wp_post_types['post']->labels->name_admin_bar = 'Events';
+}
+add_action('init', 'rename_post_object_label');
+
+function rename_post_tag_labels() {
+    global $wp_taxonomies;
+    // Get the post_tag object
+    $taxonomy = 'post_tag';
+    if (isset($wp_taxonomies[$taxonomy])) {
+        $labels = &$wp_taxonomies[$taxonomy]->labels;
+        $labels->name = 'Cities';
+        $labels->singular_name = 'City';
+        $labels->search_items = 'Search Cities';
+        $labels->popular_items = 'Popular Cities';
+        $labels->all_items = 'All Cities';
+        $labels->parent_item = null; // Post tags don't have parents
+        $labels->parent_item_colon = null;
+        $labels->edit_item = 'Edit City';
+        $labels->view_item = 'View City';
+        $labels->update_item = 'Update City';
+        $labels->add_new_item = 'Add New City';
+        $labels->new_item_name = 'New City Name';
+        $labels->separate_items_with_commas = 'Separate cities with commas';
+        $labels->add_or_remove_items = 'Add or remove cities';
+        $labels->choose_from_most_used = 'Choose from the most used cities';
+        $labels->not_found = 'No cities found.';
+        $labels->menu_name = 'Cities';
+    }
+}
+add_action('init', 'rename_post_tag_labels');
+
+function rename_tag_menu_label() {
+    global $submenu;
+    $submenu['edit.php'][16][0] = 'Cities';
+}
+add_action('admin_menu', 'rename_tag_menu_label');
+
+
+// Hook to the 'admin_menu' action
+add_action('admin_menu', 'link_existing_tags_page_menu');
+
+// Function to add the menu item
+function link_existing_tags_page_menu() {
+    add_menu_page(
+        'Cities',           // Page title
+        'Cities',                      // Menu title
+        'manage_options',            // Capability required
+        'edit-tags.php?taxonomy=post_tag', // Menu slug (existing page URL with parameters)
+        '',                          // Function to display content (not needed)
+        'dashicons-tag',             // Icon URL or dashicon class
+        6                            // Position in the menu
+    );
+}
+

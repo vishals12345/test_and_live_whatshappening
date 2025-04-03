@@ -91,11 +91,11 @@
 			 * @param {object} part
 			 */
 			clearAnimation: function( part ) {
-				var text = $ush.toString( part.states[ part.currentState ] ).replace( ' ', this.nbsp_char );
+				var text = part.states[ part.currentState ].replace( ' ', this.nbsp_char );
 				part.$node
 					.html( text )
 					.css( 'width', '' );
-				if ( this.type === 'typing' && text.trim() && text !== this.nbsp_char ) {
+				if ( this.type === 'typing' && $.trim( text ) && text !== this.nbsp_char ) {
 					part.$node.append( '<i class="w-itext-cursor"></i>' );
 				}
 				if ( part.curDuration === Math.max.apply( null, this.animateDurations ) ) {
@@ -121,7 +121,7 @@
 			part.curDuration = this.duration;
 			// Remove typing chars
 			if ( this.type === 'typing' ) {
-				var oldValue = $curSpan.text().trim() + ' ',
+				var oldValue = $.trim( $curSpan.text() ) + ' ',
 					removeDuration = Math.floor( part.curDuration / 3 );
 				startDelay = Math.max.apply( null, [ startDelay, ( removeDuration * oldValue.length ) ] );
 				for ( var i = 0; i < oldValue.length; i ++ ) {
@@ -183,7 +183,7 @@
 						}.bind( this, $char ), part.curDuration * i );
 					}
 
-					if ( this.type === 'typing' && $ush.toString( nextValue ).trim() && nextValue !== this.nbsp_char ) {
+					if ( this.type === 'typing' && $.trim( nextValue ) && nextValue !== this.nbsp_char ) {
 						$nextSpan.append( '<i class="w-itext-cursor"></i>' );
 					}
 					part.curDuration *= ( nextValue.length + 1 );

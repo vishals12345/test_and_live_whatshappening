@@ -27,7 +27,6 @@
 			self._events = {
 				showNumberOfHiddenImages: $ush.debounce( self.showNumberOfHiddenImages.bind( self ), 5 ),
 				getItems: self._getItems.bind( self ),
-				usbReloadIsotopeLayout: self._usbReloadIsotopeLayout.bind( self ),
 			};
 
 			if ( self.$jsonContainer.length && ! $us.usbPreview() ) {
@@ -42,9 +41,6 @@
 			if ( self.$container.hasClass( 'action_popup_image' ) ) {
 				self.initMagnificPopup();
 			}
-
-			// For Live Builder
-			self.$container.on( 'usbReloadIsotopeLayout', self._events.usbReloadIsotopeLayout );
 
 			// Show number of hidden images
 			$us.$window.on( 'resize', self._events.showNumberOfHiddenImages );
@@ -114,18 +110,6 @@
 				self.$itemsImg
 					.filter( ':visible:last' )
 					.attr( 'data-hidden-images-number', hiddenImagesNumber );
-			}
-		},
-
-		/**
-		 * Reload layout in the Live Builder context.
-		 *
-		 * @event handler
-		 */
-		_usbReloadIsotopeLayout: function() {
-			const self = this;
-			if ( self.$container.hasClass( 'with_isotope' ) ) {
-				self.$list.isotope( 'layout' );
 			}
 		},
 

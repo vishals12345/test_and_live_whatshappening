@@ -10,41 +10,25 @@ AND ANY CHANGES MADE HERE WILL BE OVERWRITTEN.
 ----------------------------------------------------------------
 */
 
-/* Reset font family to the theme */
-:root {
-	--tec-font-family-sans-serif: inherit;
-}
-
-.l-body .tribe-common a {
-	border: 0 !important;
-	}
-
 #tribe-events-pg-template,
-.l-canvas > .tribe-common.tribe-events-view {
+.tribe-common.tribe-events-view {
 	padding-top: calc(var(--header-height) + 3rem);
 	}
-.l-canvas > .tribe-common.tribe-events-view {
+.tribe-common.tribe-events-view {
 	padding-left: 1rem;
 	padding-right: 1rem;
 	}
 .wpb_widgetised_column .tribe-common.tribe-events-view {
 	padding: 0;
 	}
-.tribe-common .tribe-common-l-container {
+.tribe-common-l-container {
 	padding: 0 !important;
-	max-width: var(--site-content-width);
 	}
-.tribe-common input.tribe-events-c-search__input {
-	box-shadow: none;
+.tribe-events-c-search__input {
+	box-shadow: none !important;
 	}
-.tribe-common button.tribe-events-c-search__button[type="submit"] {
-	font-size: var(--tec-font-size-2);
-	padding: 11px 20px;
-	}
-.tribe-common .tribe-common-c-btn-border,
-.tribe-common a.tribe-common-c-btn-border {
-	display: flex;
-	align-items: center;
+.tribe-common-c-btn-border > button {
+	vertical-align: baseline;
 	}
 
 .rounded_none .datepicker,
@@ -55,4 +39,8 @@ AND ANY CHANGES MADE HERE WILL BE OVERWRITTEN.
 .rounded_none .tribe-events-c-messages__message,
 .rounded_none .tooltipster-base {
 	border-radius: 0 !important;
+	}
+
+body:not(.links_underline) .tribe-common a {
+	border: 0 !important;
 	}

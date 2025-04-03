@@ -124,7 +124,7 @@
 					if ( $ush.getCookie( cookieName ) !== null ) {
 						return;
 					}
-					var daysUntilNextShow = $ush.parseFloat( self.triggerOptions.daysUntilNextShow );
+					var daysUntilNextShow = $ush.parseInt( self.triggerOptions.daysUntilNextShow );
 					$ush.setCookie( cookieName, 'shown', daysUntilNextShow || 365 );
 				}
 			}
@@ -280,13 +280,7 @@
 		} );
 	};
 
-	$( () => {
+	$( function() {
 		$( '.w-popup' ).wPopup();
 	} );
-
-	// Init in Post\Product List or Grid context
-	$us.$document.on( 'usPostList.itemsLoaded usGrid.itemsLoaded', ( _, $items ) => {
-		$( '.w-popup', $items ).wPopup();
-	} );
-
 }( jQuery );

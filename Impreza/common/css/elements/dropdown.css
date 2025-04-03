@@ -4,7 +4,6 @@
 
 .w-dropdown {
 	flex-shrink: 0;
-	width: fit-content;
 	}
 .w-dropdown-h {
 	text-align: left;
@@ -176,3 +175,4 @@
 	.w-dropdown.dropdown_hor.opened .w-dropdown-list-h {
 		transform: translate3d(0,0,0);
 		}
+		
